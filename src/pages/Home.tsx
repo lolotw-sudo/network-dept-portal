@@ -40,8 +40,8 @@ const Home = () => {
             </span>
           </h1>
           <p className="text-slate-300 text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
-            這是專為同仁設計的網路學系導覽入口，<br className="hidden md:block"/>
-            從基礎線路到 AI 智聯網，加速您的專業成長曲線。
+            這是專為中華電信同仁設計的網路學系導覽入口，<br className="hidden md:block"/>
+            從基礎線路到 AI 智聯網，加速您的專業成長曲線，為您串聯海地星空。
           </p>
 
           <div className="flex flex-wrap justify-center gap-4">
