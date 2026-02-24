@@ -101,45 +101,9 @@ const Home = () => {
         </div>
       </div>
 
-        {/* 三大快速導覽：課程介紹 / 師資介紹 / 新人導覽 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-          <Link
-            to="/categories"
-            className="group relative overflow-hidden bg-white border border-slate-200 p-8 rounded-3xl transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2"
-          >
-            <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-6">
-              <BookOpen className="w-7 h-7 text-blue-500" />
-            </div>
-            <h3 className="text-xl font-bold mb-2 text-slate-800">課程介紹</h3>
-            <p className="text-slate-500 text-sm leading-relaxed">探索系上課程分類與學習路徑，快速找到合適的課程。</p>
-          </Link>
-
-          <Link
-            to="/guide/org"
-            className="group relative overflow-hidden bg-white border border-slate-200 p-8 rounded-3xl transition-all duration-500 hover:shadow-2xl hover:shadow-emerald-500/10 hover:-translate-y-2"
-          >
-            <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-6">
-              <Users className="w-7 h-7 text-emerald-500" />
-            </div>
-            <h3 className="text-xl font-bold mb-2 text-slate-800">師資介紹</h3>
-            <p className="text-slate-500 text-sm leading-relaxed">認識授課師資與專長，幫助您選擇合適的講師與課程。</p>
-          </Link>
-
-          <Link
-            to="/guide/newbie"
-            className="group relative overflow-hidden bg-white border border-slate-200 p-8 rounded-3xl transition-all duration-500 hover:shadow-2xl hover:shadow-fuchsia-500/10 hover:-translate-y-2"
-          >
-            <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-6">
-              <MapPin className="w-7 h-7 text-fuchsia-500" />
-            </div>
-            <h3 className="text-xl font-bold mb-2 text-slate-800">新人導覽</h3>
-            <p className="text-slate-500 text-sm leading-relaxed">新人入門路徑、推薦課程與快速上手資源集中在此。</p>
-          </Link>
-        </div>
-
       {/* 四大分類區 - 加入滑鼠互動放大效果 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-        {CATEGORIES.map((cat) => {
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+        {CATEGORIES.map((cat, idx) => {
           const IconComponent = ICON_MAP[cat.id] || Globe;
           return (
             <Link 
@@ -156,7 +120,7 @@ const Home = () => {
                 </div>
                 
                 <div className="text-blue-600 font-bold text-xs mb-2 tracking-widest uppercase">
-                  SECTION {cat.id}
+                  網路學系課程介紹{idx + 1}
                 </div>
                 <h3 className="text-xl font-bold mb-3 text-slate-800">{cat.title}</h3>
                 <p className="text-slate-500 text-sm leading-relaxed mb-4">

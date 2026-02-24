@@ -56,7 +56,7 @@ const NewbieGuide = () => {
             </span>
           </div>
           <img 
-            src="/images/eip_portal.png" 
+            src={`${import.meta.env.BASE_URL}images/eip_portal.png`} 
             alt="EIP 入口選單" 
             className="w-full h-auto transition-transform duration-500 group-hover:scale-105" 
           />
@@ -76,7 +76,7 @@ const NewbieGuide = () => {
             </span>
           </div>
           <img 
-            src="/images/tis_home.png" 
+            src={`${import.meta.env.BASE_URL}images/tis_home.png`} 
             alt="培訓系統首頁" 
             className="w-full h-auto" 
           />
