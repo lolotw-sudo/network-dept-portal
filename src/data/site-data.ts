@@ -74,4 +74,5 @@ export const ORG_GUIDE = [
   { type: "資訊單位", recommendId: "core" },
   { type: "企劃單位", recommendId: "ai" }
 ];
+// 確保檔案中有這一行
 export const TIS_SAMPLE_URL = "https://tis12.cht.com.tw/jap/tis/classDoneQueryByPro.jsp?department=P&dtype1=C&dtype2=AC";

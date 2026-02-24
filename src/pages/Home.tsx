@@ -2,7 +2,7 @@
 import { Link } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { CATEGORIES } from "../data/site-data";
-import { ArrowRight, Globe, Shield, Cpu, Activity } from "lucide-react";
+import { ArrowRight, Globe, Shield, Cpu, Activity, BookOpen, Users, MapPin } from "lucide-react";
 
 // 定義分類對應的圖示（增加視覺科技感）
 const ICON_MAP: Record<string, any> = {
@@ -12,6 +12,27 @@ const ICON_MAP: Record<string, any> = {
   aiot: Activity,
 };
 
+const HERO_QUICK_NAV = [
+  {
+    to: "/categories",
+    label: "課程介紹",
+    desc: "探索分類與路徑",
+    Icon: BookOpen,
+  },
+  {
+    to: "/guide/org",
+    label: "師資介紹",
+    desc: "認識授課專家",
+    Icon: Users,
+  },
+  {
+    to: "/guide/newbie",
+    label: "新人導覽",
+    desc: "快速上手",
+    Icon: MapPin,
+  },
+];
+
 const Home = () => {
   return (
     <Layout>
@@ -20,13 +41,13 @@ const Home = () => {
         {/* 背景裝飾圖片 - 使用你上傳的 bg_hero.jpg */}
         <div 
           className="absolute inset-0 opacity-30 bg-cover bg-center mix-blend-overlay"
-          style={{ backgroundImage: "url('/images/bg_hero.jpg')" }}
+          style={{ backgroundImage: "url('./images/bg_hero.jpg')" }}
         ></div>
         
        {/* 動態科技紋理 - 呼吸慢一點的版本 */}
 <div 
   className="absolute inset-0 opacity-10 animate-[pulse_4s_ease-in-out_infinite]"
-  style={{ backgroundImage: "url('/images/pattern_circuit.png')", backgroundSize: '400px' }}
+  style={{ backgroundImage: "url('./images/pattern_circuit.png')", backgroundSize: '400px' }}
 ></div>
 
         <div className="relative z-10">
@@ -44,17 +65,77 @@ const Home = () => {
             從基礎線路到 AI 智聯網，加速您的專業成長曲線，為您串聯海地星空。
           </p>
 
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link 
-              to="/guide/newbie" 
-              className="group px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold transition-all duration-300 shadow-lg shadow-blue-600/30 flex items-center hover:-translate-y-1"
-            >
-              我是新人，從哪開始？
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
+          <div className="mt-4 flex flex-wrap justify-center gap-4">
+            {HERO_QUICK_NAV.map(({ to, label, desc, Icon }) => (
+              <Link
+                key={label}
+                to={to}
+                className="group relative flex flex-col items-center gap-3 min-w-[240px] px-6 pt-6 pb-4 bg-white/5 backdrop-blur-sm shadow-[0_20px_45px_rgba(2,6,23,0.35)] overflow-hidden transition-all duration-300 hover:-translate-y-1"
+              >
+                <span
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] rounded-none bg-gradient-to-t from-slate-200/80 via-sky-400/60 to-sky-500/80 opacity-0 translate-y-full transition-[opacity,transform] duration-700 ease-out delay-100 group-hover:opacity-90 group-hover:translate-y-0"
+                  style={{
+                    clipPath:
+                      'path("M0 80 Q40 40 80 70 T160 60 T240 75 T320 55 L360 120 L0 120 Z")',
+                  }}
+                ></span>
+                <span
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-[40%] rounded-none opacity-0 translate-y-full transition-[opacity,transform] duration-700 ease-out delay-150 group-hover:opacity-80 group-hover:translate-y-0"
+                  style={{
+                    backgroundImage:
+                      "radial-gradient(circle at 50% 0, rgba(255,255,255,0.45), rgba(255,255,255,0))",
+                    clipPath:
+                      'path("M0 40 Q40 10 80 35 Q120 60 160 30 Q200 5 240 35 Q280 60 320 25 L360 80 L0 80 Z")',
+                  }}
+                ></span>
+                <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 via-sky-500 to-emerald-400 text-white shadow-xl transition-transform duration-300 group-hover:scale-105">
+                  <Icon className="w-7 h-7" />
+                </div>
+                <div className="flex flex-col items-center text-center gap-1 min-h-[58px] relative z-10">
+                  <span className="font-black text-2xl leading-none text-white">{label}</span>
+                  <span className="text-xs text-white/70">{desc}</span>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </div>
+
+        {/* 三大快速導覽：課程介紹 / 師資介紹 / 新人導覽 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+          <Link
+            to="/categories"
+            className="group relative overflow-hidden bg-white border border-slate-200 p-8 rounded-3xl transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2"
+          >
+            <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-6">
+              <BookOpen className="w-7 h-7 text-blue-500" />
+            </div>
+            <h3 className="text-xl font-bold mb-2 text-slate-800">課程介紹</h3>
+            <p className="text-slate-500 text-sm leading-relaxed">探索系上課程分類與學習路徑，快速找到合適的課程。</p>
+          </Link>
+
+          <Link
+            to="/guide/org"
+            className="group relative overflow-hidden bg-white border border-slate-200 p-8 rounded-3xl transition-all duration-500 hover:shadow-2xl hover:shadow-emerald-500/10 hover:-translate-y-2"
+          >
+            <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-6">
+              <Users className="w-7 h-7 text-emerald-500" />
+            </div>
+            <h3 className="text-xl font-bold mb-2 text-slate-800">師資介紹</h3>
+            <p className="text-slate-500 text-sm leading-relaxed">認識授課師資與專長，幫助您選擇合適的講師與課程。</p>
+          </Link>
+
+          <Link
+            to="/guide/newbie"
+            className="group relative overflow-hidden bg-white border border-slate-200 p-8 rounded-3xl transition-all duration-500 hover:shadow-2xl hover:shadow-fuchsia-500/10 hover:-translate-y-2"
+          >
+            <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-6">
+              <MapPin className="w-7 h-7 text-fuchsia-500" />
+            </div>
+            <h3 className="text-xl font-bold mb-2 text-slate-800">新人導覽</h3>
+            <p className="text-slate-500 text-sm leading-relaxed">新人入門路徑、推薦課程與快速上手資源集中在此。</p>
+          </Link>
+        </div>
 
       {/* 四大分類區 - 加入滑鼠互動放大效果 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">

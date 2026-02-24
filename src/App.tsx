@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom"; // 👈 改用 HashRouter
 import Home from "./pages/Home";
 import CategoriesTabs from "./pages/CategoriesTabs";
 import NewbieGuide from "./pages/NewbieGuide";
@@ -7,7 +7,7 @@ import YearFocus from "./pages/YearFocus";
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <HashRouter> {/* 👈 這裡也要同步改為 HashRouter */}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/categories" element={<CategoriesTabs />} />
@@ -15,6 +15,6 @@ export default function App() {
         <Route path="/guide/org" element={<OrgGuide />} />
         <Route path="/focus/yearly" element={<YearFocus />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
