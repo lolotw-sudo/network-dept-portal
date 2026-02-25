@@ -93,7 +93,7 @@ const CategoriesTabs = () => {
             </div>
            
             <a
-              href="https://elearning.cht.com.tw/portal/cate_courses.jsp"
+              href="https://elearning.cht.com.tw/portal/cate_list.jsp"
               target="_blank"
               rel="noopener noreferrer"
               className="block text-center bg-btnPrimary hover:bg-btnPrimaryHover text-white font-bold py-3 rounded-xl transition-colors"
