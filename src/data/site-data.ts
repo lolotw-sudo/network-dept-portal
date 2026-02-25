@@ -44,7 +44,9 @@ export const CATEGORIES: Category[] = [
     ],
     subDomains: [
       { label: "固定寬頻網路", dtype2: "AB" },
-      { label: "客網裝維管理", dtype2: "AD" }
+      { label: "客網裝維管理", dtype2: "AD" },
+      { label: "線路技術", dtype2: "AG" },
+      { label: "行動及新興網路", dtype2: "AE" }
     ],
     subDomainGroups: [
       { label: "固定網路", color: "#fbbf24", children: ["傳輸網路", "局內網路", "微波衛星通訊"] },
@@ -69,9 +71,9 @@ export const CATEGORIES: Category[] = [
       "規劃、管理與跨單位協調角色"
     ],
     subDomains: [
-      { label: "IP 網路技術", dtype2: "AC" },
-      { label: "電信雲網融合", dtype2: "AI" },
-      { label: "雲端/IDC", dtype2: "AH" },
+      { label: "固定網路", dtype2: "AC" },
+      { label: "行動網路", dtype2: "AD" },
+      { label: "數據網路", dtype2: "AE" },
       { label: "電力空調", dtype2: "AA" }
     ],
     subDomainGroups: [
@@ -131,9 +133,9 @@ export const CATEGORIES: Category[] = [
       "對新興技術有發展需求的業務或技術單位"
     ],
     subDomains: [
-      { label: "行動及新興網路", dtype2: "AE" },
-      { label: "電信雲網融合", dtype2: "AI" },
-      { label: "智慧聯網技術與應用", dtype2: "AF" }
+      { label: "新媒體", dtype2: "BA" },
+      { label: "網路新技術", dtype2: "BB" },
+      { label: "AI/智慧應用", dtype2: "BC" }
     ],
     subDomainGroups: [
       
@@ -165,7 +167,8 @@ export const CATEGORIES: Category[] = [
     ],
     subDomains: [
       { label: "網路安全", dtype2: "EA" },
-      { label: "企業永續（E）", dtype2: "EB" }
+      { label: "企業永續（E）", dtype2: "EB" },
+      { label: "風險治理", dtype2: "EC" }
     ],
     subDomainGroups: [
       { label: "網路新技術", color: "#dc2626", children: ["新世代網路安全"]       },
@@ -187,4 +190,4 @@ export const ORG_GUIDE = [
 
 // 確保檔案中有這一行
 export const TIS_SAMPLE_URL =
-  "https://tis12.cht.com.tw/jap/tis/classDoneQueryByPro.jsp?department=P&dtype1=C&dtype2=AC";
+  "https://tis12.cht.com.tw/jap/tis/classDoneQueryByPro.jsp?department=P&dtype1=N";
