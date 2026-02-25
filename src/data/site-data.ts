@@ -44,9 +44,7 @@ export const CATEGORIES: Category[] = [
     ],
     subDomains: [
       { label: "固定寬頻網路", dtype2: "AB" },
-      { label: "客網裝維管理", dtype2: "AD" },
-      { label: "線路技術", dtype2: "AG" },
-      { label: "行動及新興網路", dtype2: "AE" }
+      { label: "客網裝維管理", dtype2: "AD" }
     ],
     subDomainGroups: [
       { label: "固定網路", color: "#fbbf24", children: ["傳輸網路", "局內網路", "微波衛星通訊"] },
@@ -71,9 +69,9 @@ export const CATEGORIES: Category[] = [
       "規劃、管理與跨單位協調角色"
     ],
     subDomains: [
-      { label: "固定網路", dtype2: "AC" },
-      { label: "行動網路", dtype2: "AD" },
-      { label: "數據網路", dtype2: "AE" },
+      { label: "IP 網路技術", dtype2: "AC" },
+      { label: "雲端/IDC", dtype2: "AH" },
+      { label: "電信雲網融合", dtype2: "AI" },
       { label: "電力空調", dtype2: "AA" }
     ],
     subDomainGroups: [
@@ -133,9 +131,8 @@ export const CATEGORIES: Category[] = [
       "對新興技術有發展需求的業務或技術單位"
     ],
     subDomains: [
-      { label: "新媒體", dtype2: "BA" },
-      { label: "網路新技術", dtype2: "BB" },
-      { label: "AI/智慧應用", dtype2: "BC" }
+      { label: "智慧聯網技術與應用", dtype2: "AF" },
+      { label: "行動及新興網路", dtype2: "AE" }
     ],
     subDomainGroups: [
       
@@ -166,9 +163,8 @@ export const CATEGORIES: Category[] = [
       "涉及 ESG、永續或治理議題之單位"
     ],
     subDomains: [
-      { label: "網路安全", dtype2: "EA" },
-      { label: "企業永續（E）", dtype2: "EB" },
-      { label: "風險治理", dtype2: "EC" }
+      { label: "企業永續（E）", dtype2: "BU" },
+      { label: "網路安全", dtype2: "AJ" }
     ],
     subDomainGroups: [
       { label: "網路新技術", color: "#dc2626", children: ["新世代網路安全"]       },

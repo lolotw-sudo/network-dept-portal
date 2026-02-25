@@ -67,7 +67,7 @@ const CategoriesTabs = () => {
             <div className="mt-6">
               <h3 className="text-lg font-bold text-textMain mb-3">近期開課（實體課/直播課）</h3>
               <div className="flex flex-wrap gap-3">
-                {currentData.subDomains.slice(0, 2).map((sub: SubDomain) => (
+                {currentData.subDomains.map((sub: SubDomain) => (
                   <a
                     key={`${sub.label}-${sub.dtype2 ?? ""}`}
                     href={`${currentData.ctaUrl}${sub.dtype2 ? `&dtype2=${sub.dtype2}` : ""}`}
