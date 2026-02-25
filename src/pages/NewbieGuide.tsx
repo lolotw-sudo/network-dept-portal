@@ -107,17 +107,24 @@ const NewbieGuide = () => {
               <li className="flex items-start gap-2">• 課程分批排出來（近兩個月較完整）</li>
               <li className="flex items-start gap-2">• 先找到課再看時間能否配合</li>
             </ul>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              {CATEGORIES.find(cat => cat.id === "access")?.subDomains.map(sub => (
-                <a
-                  key={sub.label}
-                  href={`${TIS_SAMPLE_URL}${sub.dtype2 ? `&dtype2=${sub.dtype2}` : ""}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 rounded-xl border border-borderSubtle bg-white/80 text-sm font-semibold text-textMain hover:border-btnPrimary hover:bg-btnPrimary/10 transition"
-                >
-                  {sub.label}
-                </a>
+            <div className="mt-6 space-y-4">
+              {CATEGORIES.map((cat, idx) => (
+                <div key={cat.id} className="space-y-2">
+                  {idx > 0 && <div className="h-px bg-borderSubtle" />}
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {cat.subDomains.map(sub => (
+                      <a
+                        key={`${cat.id}-${sub.label}`}
+                        href={`${TIS_SAMPLE_URL}${sub.dtype2 ? `&dtype2=${sub.dtype2}` : ""}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 rounded-xl border border-borderSubtle bg-white/80 text-sm font-semibold text-textMain hover:border-btnPrimary hover:bg-btnPrimary/10 transition"
+                      >
+                        {sub.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           </div>
