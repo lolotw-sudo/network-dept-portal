@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { CATEGORIES, SubDomain } from "../data/site-data";
 import { Layout } from "../components/Layout";
 import { ContactCard } from "../components/ContactCard";
+import { Info } from "lucide-react";
 
 const CategoriesTabs = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -19,6 +20,10 @@ const CategoriesTabs = () => {
       setActiveTab(tabQuery);
     }
   }, [tabQuery]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, []);
 
   const currentData = CATEGORIES.find(c => c.id === activeTab)!;
 
@@ -61,24 +66,53 @@ const CategoriesTabs = () => {
         <div className="space-y-10 animate-in fade-in duration-500">
           {/* Block 1: Title & Description */}
           <section className="bg-bgSurface p-8 rounded-2xl border border-borderSubtle">
-            <h2 className="text-2xl font-bold text-textMain mb-2">{currentData.title}</h2>
-            <p className="text-btnPrimary font-bold text-lg mb-4 italic">「{currentData.slogan}」</p>
-            <p className="text-textBody leading-relaxed max-w-3xl">{currentData.description}</p>
-            <div className="mt-6">
-              <h3 className="text-lg font-bold text-textMain mb-3">近期開課（實體課/直播課）</h3>
-              <div className="flex flex-wrap gap-3">
-                {currentData.subDomains.map((sub: SubDomain) => (
-                  <a
-                    key={`${sub.label}-${sub.dtype2 ?? ""}`}
-                    href={`${currentData.ctaUrl}${sub.dtype2 ? `&dtype2=${sub.dtype2}` : ""}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-5 py-2 rounded-2xl bg-gradient-to-r from-blue-500 to-sky-500 text-white text-sm font-semibold shadow-sm"
-                  >
-                    {sub.label}
-                  </a>
-                ))}
+            <div className="grid gap-8 lg:grid-cols-[2fr,1fr]">
+              <div className="space-y-5">
+                <div>
+                  <h2 className="text-2xl font-bold text-textMain mb-2">{currentData.title}</h2>
+                  <p className="text-btnPrimary font-bold text-lg italic">
+                    「{currentData.slogan}」
+                  </p>
+                </div>
+                <p className="text-textBody leading-relaxed max-w-3xl">{currentData.description}</p>
+                <div>
+                  <h3 className="text-lg font-bold text-textMain mb-3 flex items-center gap-2">
+                    <span>近期開課（實體課/直播課）</span>
+                    <div className="relative group">
+                      <Info className="w-4 h-4 text-btnPrimary" />
+                      <span className="pointer-events-none absolute left-1/2 bottom-full -translate-x-1/2 mb-2 w-56 rounded-lg bg-slate-800 px-3 py-2 text-[14px] font-medium leading-snug text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                        點擊可連接至學院網站，學院課程持續增加中，近兩個月會較完整
+                      </span>
+                    </div>
+                  </h3>
+                  <div className="flex flex-wrap gap-3">
+                    {currentData.subDomains.map((sub: SubDomain) => (
+                      <a
+                        key={`${sub.label}-${sub.dtype2 ?? ""}`}
+                        href={`${currentData.ctaUrl}${sub.dtype2 ? `&dtype2=${sub.dtype2}` : ""}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-5 py-2 rounded-2xl bg-gradient-to-r from-blue-500 to-sky-500 text-white text-sm font-semibold shadow-sm"
+                      >
+                        {sub.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
               </div>
+              <aside className="rounded-2xl bg-slate-100 p-6 shadow-sm">
+                <div className="text-sm uppercase tracking-[0.5em] text-textMuted mb-3">
+                  主要對應單位／角色
+                </div>
+                <ul className="space-y-2 text-sm text-textBody">
+                  {currentData.orgTargets.map((item, i) => (
+                    <li key={i} className="flex gap-2">
+                      <span className="text-btnPrimary font-semibold">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </aside>
             </div>
           </section>
 
@@ -123,16 +157,6 @@ const CategoriesTabs = () => {
               ))}
             </div>
             
-          </section>
-          <section className="bg-bgSurface p-8 rounded-2xl border border-borderSubtle">
-            <h3 className="font-bold mb-4 text-textMain">主要對應單位／角色</h3>
-            <ul className="space-y-2">
-              {currentData.orgTargets.map((item, i) => (
-                <li key={i} className="flex items-start text-textBody text-sm">
-                  <span className="text-btnPrimary mr-2">•</span> {item}
-                </li>
-              ))}
-            </ul>
           </section>
         </div>
 
