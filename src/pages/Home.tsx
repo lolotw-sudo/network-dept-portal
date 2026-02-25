@@ -1,4 +1,5 @@
 // src/pages/Home.tsx
+import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { CATEGORIES } from "../data/site-data";
@@ -36,10 +37,10 @@ const HERO_QUICK_NAV = [
 const Home = () => {
   return (
     <Layout>
-      {/* Hero Section - 科技感大標題區 */}
+      {/* Hero Sectˇㄓ35ion - 科技感大標題區 */}
       <div className="relative overflow-hidden rounded-3xl mb-12 bg-slate-900 py-20 px-8 text-center shadow-2xl">
         {/* 背景裝飾圖片 - 使用你上傳的 bg_hero.jpg */}
-        <div 
+       1010 <div 
           className="absolute inset-0 opacity-30 bg-cover bg-center mix-blend-overlay"
           style={{ backgroundImage: "url('./images/bg_hero.jpg')" }}
         ></div>
@@ -54,9 +55,14 @@ const Home = () => {
           <div className="inline-block px-4 py-1.5 mb-6 text-m font-bold tracking-widest text-blue-400 uppercase bg-blue-400/10 border border-blue-400/20 rounded-full">
             中華電信學院 網路學系 板橋院本部
           </div>
-          <h1 className="text-5xl md:text-6xl font-black text-white mb-8 tracking-tight">
-            掌握網路技術脈絡 <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
+          <h1 className="text-5xl md:text-6xl font-black text-white mb-8 tracking-tight leading-tight">
+            <span className="typewriter hero-phrase-glow block">掌握網路技術脈絡</span>
+
+            <br></br>
+            <span
+              className="typewriter hero-phrase-glow block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400"
+              style={{ "--typewriter-delay": "0.45s", "--typewriter-duration": "1.8s", "--typewriter-steps": "28" } as CSSProperties}
+            >
               賦能數位連結未來
             </span>
           </h1>
