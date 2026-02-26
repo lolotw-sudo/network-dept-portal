@@ -32,13 +32,17 @@ const StrategyMap = () => {
               <button
                 key={strategy.strategy}
                 onClick={() => setActive(idx)}
-                className={`px-5 py-2 rounded-xl border transition ${
+                className={`px-6 py-3 rounded-xl border transition text-left ${
                   active === idx
                     ? "bg-slate-900 text-white border-white/60 shadow-lg text-lg"
-                    : "border-white/20 text-slate-100 hover:border-slate-50 text-base"
+                    : "bg-slate-800 text-slate-400 border-slate-700 hover:border-white/30 text-base"
                 }`}
               >
-                <span className="block font-bold leading-tight text-2xl tracking-tight text-white">
+                <span
+                  className={`block font-bold leading-tight text-2xl tracking-tight ${
+                    active === idx ? "text-white" : "text-slate-200"
+                  }`}
+                >
                   {strategy.strategy}
                 </span>
               </button>
