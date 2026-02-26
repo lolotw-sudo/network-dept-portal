@@ -13,6 +13,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
             <Link to="/guide/org" className="hover:text-btnPrimary">組織導覽</Link>
             <Link to="/learning-map" className="hover:text-btnPrimary">學習地圖</Link>
             <Link to="/learning-map-modal" className="hover:text-btnPrimary">學習地圖（Modal）</Link>
+            <Link to="/strategy-map" className="hover:text-btnPrimary">策略地圖</Link>
           </div>
         </div>
       </nav>
