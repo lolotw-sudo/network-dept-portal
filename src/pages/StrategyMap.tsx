@@ -47,66 +47,39 @@ const StrategyMap = () => {
           </div>
         </header>
 
-        <div className="space-y-6">
-          <div className="flex overflow-x-auto gap-4 py-2">
+        <div className="space-y-6 border-t border-white/10 pt-6">
+          <div className="flex flex-wrap justify-between gap-4">
             {highlightStrategy.types.map(type => (
-              <article
-                key={type.id}
-                className="min-w-[240px] rounded-3xl border border-white/10 bg-white/5 p-5 shadow-lg backdrop-blur-2xl"
-              >
-                <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-200 mb-2">
-                  TYPE {type.id}
-                </p>
-                <h2 className="text-xl font-semibold text-white mb-1">{type.name}</h2>
-                <p className="text-xs text-slate-300">共 {type.courses.length} 門課程</p>
-                <div className="mt-4 flex flex-col gap-2">
-                  {type.courses.slice(0, 3).map(course => (
-                    <span
-                      key={course.name}
-                      className={`text-sm rounded-2xl border border-white/5 px-3 py-2 text-white/80`}
-                    >
-                      {course.name}
-                    </span>
-                  ))}
+              <div key={type.id} className="flex-1 min-w-[220px]">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-bold uppercase tracking-[0.5em] text-slate-400">
+                    {type.name}
+                  </h3>
+                  <span className="text-xs text-slate-400">{type.courses.length} 門課 </span>
                 </div>
-              </article>
-            ))}
-          </div>
-
-          <div className="space-y-6 border-t border-white/10 pt-6">
-            <div className="flex flex-wrap justify-between gap-4">
-              {highlightStrategy.types.map(type => (
-                <div key={type.id} className="flex-1 min-w-[220px]">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-bold uppercase tracking-[0.5em] text-slate-400">
-                      {type.name}
-                    </h3>
-                    <span className="text-xs text-slate-400">{type.courses.length} 門課 </span>
-                  </div>
-                  <div className="space-y-2">
-                    {type.courses.map(course => {
-                      const palette = levelPalette[course.level];
-                      return (
-                        <div
-                          key={course.name}
-                          className={`rounded-3xl border border-white/5 bg-gradient-to-r ${palette.gradient} px-4 py-3 text-white shadow-lg ${course.is_featured ? "animate-pulse" : ""}`}
-                        >
-                          <div className="flex items-center justify-between gap-4">
-                            <p className="font-semibold text-sm">{course.name}</p>
-                            {course.is_featured && (
-                              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/80">
-                                FEATURED
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-white/80 mt-1">{course.level}</p>
+                <div className="space-y-2">
+                  {type.courses.map(course => {
+                    const palette = levelPalette[course.level];
+                    return (
+                      <div
+                        key={course.name}
+                        className={`rounded-3xl border border-white/5 bg-gradient-to-r ${palette.gradient} px-4 py-3 text-white shadow-lg ${course.is_featured ? "animate-pulse" : ""}`}
+                      >
+                        <div className="flex items-center justify-between gap-4">
+                          <p className="font-semibold text-sm">{course.name}</p>
+                          {course.is_featured && (
+                            <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/80">
+                              FEATURED
+                            </span>
+                          )}
                         </div>
-                      );
-                    })}
-                  </div>
+                        <p className="text-[11px] text-white/80 mt-1">{course.level}</p>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
