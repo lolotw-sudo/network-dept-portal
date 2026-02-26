@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { CATEGORIES } from "../data/site-data";
 import { ArrowRight, Globe, Shield, Cpu, Activity, BookOpen, Users, MapPin } from "lucide-react";
+import StrategyPreview from "../components/StrategyPreview";
 
 // 定義分類對應的圖示（增加視覺科技感）
 const ICON_MAP: Record<string, any> = {
@@ -106,6 +107,8 @@ const Home = () => {
           </div>
         </div>
       </div>
+
+      <StrategyPreview />
 
       {/* 四大分類區 - 加入滑鼠互動放大效果 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
