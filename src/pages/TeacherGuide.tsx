@@ -1,6 +1,8 @@
 import { Layout } from "../components/Layout";
 import { TEACHERS } from "../data/teachers";
 
+const baseMediaPath = import.meta.env.BASE_URL || "/";
+
 const TeacherGuide = () => {
   return (
     <Layout>
@@ -23,13 +25,13 @@ const TeacherGuide = () => {
                 teacher.isLead ? "bg-gradient-to-br from-amber-100/70 to-amber-50 border-amber-200 shadow-2xl" : "bg-white/90 border-slate-200"
               }`}
             >
-              <div className="absolute inset-y-0 right-0 w-1/2">
-                <img
-                  src={teacher.photo}
-                  alt={teacher.name}
-                  className="absolute inset-0 w-full h-full object-cover object-bottom transition duration-500 ease-out group-hover:scale-[1.2]"
-                />
-              </div>
+                <div className="absolute inset-y-0 right-0 w-1/2">
+                  <img
+                    src={`${baseMediaPath.replace(/\/$/, "")}/${teacher.photo.replace(/^\//, "")}`}
+                    alt={teacher.name}
+                    className="absolute inset-0 w-full h-full object-cover object-bottom transition duration-500 ease-out group-hover:scale-[1.2]"
+                  />
+                </div>
               <div className="relative z-10 flex flex-col gap-4 pr-0 lg:pr-6">
                 <div>
                   <h2 className="text-2xl font-bold text-slate-900">{teacher.name}</h2>
