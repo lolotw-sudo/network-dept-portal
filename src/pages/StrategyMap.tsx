@@ -35,7 +35,7 @@ const StrategyMap = () => {
                 className={`px-6 py-3 rounded-xl border transition text-left ${
                   active === idx
                     ? "bg-slate-900 text-white border-white/60 shadow-lg text-lg"
-                    : "bg-slate-800 text-slate-400 border-slate-700 hover:border-white/30 text-base"
+                    : "bg-slate-500 text-slate-900 border-slate-400 hover:border-white/30 text-base"
                 }`}
               >
                 <span
@@ -51,9 +51,9 @@ const StrategyMap = () => {
         </header>
 
         <div className="space-y-5 border-t border-white/10 pt-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 justify-center mx-auto">
+          <div className="flex flex-wrap justify-center gap-4">
             {highlightStrategy.types.slice(0, 5).map(type => (
-              <div key={type.id} className="flex flex-col gap-2">
+              <div key={type.id} className="flex flex-col gap-2 w-[250px]">
                 <div>
                   <p className="text-xs text-slate-400">TYPE {type.id}</p>
                   <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
