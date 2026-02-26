@@ -47,14 +47,14 @@ const StrategyMap = () => {
         </header>
 
         <div className="space-y-5 border-t border-white/10 pt-6">
-          <div className="flex flex-wrap justify-between gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {highlightStrategy.types.slice(0, 5).map(type => (
-              <div key={type.id} className="flex-1 min-w-[220px]">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-bold uppercase tracking-[0.5em] text-slate-400">
-                    {type.name}
+              <div key={type.id} className="flex flex-col gap-2">
+                <div>
+                  <p className="text-xs text-slate-400">TYPE {type.id}</p>
+                  <h3 className="text-2xl font-bold text-white tracking-tight">
+                    {type.id} {type.name}
                   </h3>
-                  <span className="text-xs text-slate-400">TYPE {type.id}</span>
                 </div>
                 <div className="flex flex-col gap-1">
                   {type.courses.map(course => {
@@ -62,16 +62,9 @@ const StrategyMap = () => {
                     return (
                       <div
                         key={course.name}
-                        className={`border border-white/5 bg-gradient-to-r ${palette.gradient} px-4 py-1 text-xl font-semibold tracking-tight text-white ${course.is_featured ? "animate-pulse" : ""}`}
+                        className={`border border-white/5 bg-gradient-to-r ${palette.gradient} px-4 py-1 text-sm font-semibold tracking-tight text-white ${course.is_featured ? "animate-pulse" : ""}`}
                       >
-                        <div className="flex items-center justify-between gap-4">
-                          <p className="font-semibold">{course.name}</p>
-                          {course.is_featured && (
-                            <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/80">
-                              FEATURED
-                            </span>
-                          )}
-                        </div>
+                        <p>{course.name}</p>
                       </div>
                     );
                   })}
