@@ -27,53 +27,51 @@ const StrategyMap = () => {
           <p className="text-slate-500 leading-relaxed">
             依照策略主軸拆解 15 種需求類型，點擊任一策略後會橫向排列該策略下的需求類型，並以層級顏色從上到下堆疊其課程模組，若為「本院特色」課程則同步加上柔光呼吸動畫。
           </p>
-          <div className="flex flex-wrap justify-center gap-3">
+          <div className="flex flex-wrap justify-center gap-4">
             {strategies.map((strategy, idx) => (
               <button
                 key={strategy.strategy}
                 onClick={() => setActive(idx)}
-                className={`px-5 py-2 rounded-full border transition ${
+                className={`px-5 py-2 rounded-xl border transition ${
                   active === idx
-                    ? "bg-slate-900 text-white border-white/60 shadow-lg"
-                    : "border-white/20 text-slate-100 hover:border-slate-50"
+                    ? "bg-slate-900 text-white border-white/60 shadow-lg text-lg"
+                    : "border-white/20 text-slate-100 hover:border-slate-50 text-base"
                 }`}
               >
-                <span className="text-xs uppercase tracking-[0.4em] text-slate-300">
-                  {idx + 1}
+                <span className="block font-bold leading-tight text-2xl tracking-tight text-white">
+                  {strategy.strategy}
                 </span>
-                <span className="block font-bold leading-tight">{strategy.strategy}</span>
               </button>
             ))}
           </div>
         </header>
 
-        <div className="space-y-6 border-t border-white/10 pt-6">
+        <div className="space-y-5 border-t border-white/10 pt-6">
           <div className="flex flex-wrap justify-between gap-4">
-            {highlightStrategy.types.map(type => (
+            {highlightStrategy.types.slice(0, 5).map(type => (
               <div key={type.id} className="flex-1 min-w-[220px]">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-sm font-bold uppercase tracking-[0.5em] text-slate-400">
                     {type.name}
                   </h3>
-                  <span className="text-xs text-slate-400">{type.courses.length} 門課 </span>
+                  <span className="text-xs text-slate-400">TYPE {type.id}</span>
                 </div>
-                <div className="space-y-2">
+                <div className="flex flex-col gap-1">
                   {type.courses.map(course => {
                     const palette = levelPalette[course.level];
                     return (
                       <div
                         key={course.name}
-                        className={`rounded-3xl border border-white/5 bg-gradient-to-r ${palette.gradient} px-4 py-3 text-white shadow-lg ${course.is_featured ? "animate-pulse" : ""}`}
+                        className={`border border-white/5 bg-gradient-to-r ${palette.gradient} px-4 py-1 text-xl font-semibold tracking-tight text-white ${course.is_featured ? "animate-pulse" : ""}`}
                       >
                         <div className="flex items-center justify-between gap-4">
-                          <p className="font-semibold text-sm">{course.name}</p>
+                          <p className="font-semibold">{course.name}</p>
                           {course.is_featured && (
                             <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/80">
                               FEATURED
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-white/80 mt-1">{course.level}</p>
                       </div>
                     );
                   })}
