@@ -7,6 +7,7 @@ import YearFocus from "./pages/YearFocus";
 import LearningMap from "./pages/LearningMap";
 import LearningMapModal from "./pages/LearningMapModal";
 import StrategyMap from "./pages/StrategyMap";
+import TeacherGuide from "./pages/TeacherGuide";
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="/learning-map" element={<LearningMap />} />
         <Route path="/learning-map-modal" element={<LearningMapModal />} />
         <Route path="/strategy-map" element={<StrategyMap />} />
+        <Route path="/guide/teachers" element={<TeacherGuide />} />
         <Route path="/focus/yearly" element={<YearFocus />} />
       </Routes>
     </HashRouter>

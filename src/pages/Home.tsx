@@ -22,7 +22,7 @@ const HERO_QUICK_NAV = [
     Icon: BookOpen,
   },
   {
-    to: "/guide/org",
+    to: "/guide/teachers",
     label: "師資介紹",
     desc: "認識授課專家",
     Icon: Users,
