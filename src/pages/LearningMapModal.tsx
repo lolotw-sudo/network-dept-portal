@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Layout } from "../components/Layout";
 import { LEARNING_MAP, TrainingType, Course } from "../data/learning-map";
 
@@ -23,6 +24,57 @@ const LearningMapModal = () => {
 
   const handleOpen = (type: TrainingType) => setActiveType(type);
   const handleClose = () => setActiveType(null);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.body.style.overflow = activeType ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [activeType]);
+
+  const modalContent = activeType ? (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/90 backdrop-blur-lg px-4 py-6">
+      <div className="relative w-full max-w-5xl overflow-hidden rounded-[40px] bg-slate-950/90 p-8 shadow-2xl border border-white/10">
+        <button
+          onClick={handleClose}
+          className="absolute right-6 top-6 text-white/80 hover:text-white"
+        >
+          ✕
+        </button>
+        <header className="border-b border-white/10 pb-4 mb-6">
+          <p className="text-xs uppercase tracking-[0.5em] text-slate-500">課程清單</p>
+          <h2 className="text-3xl font-bold text-white">{activeType.name}</h2>
+          <p className="text-sm text-slate-400">
+            Strategy: {LEARNING_MAP.curriculum_map[0].strategy} · Level: {getTopLevel(activeType)}
+          </p>
+        </header>
+
+        <div className="grid gap-3 max-h-[65vh] overflow-y-auto pr-3">
+          {activeType.courses.map(course => (
+            <div
+              key={course.name}
+              className="glass-card rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 flex items-center justify-between gap-4"
+            >
+              <div>
+                <p className="text-sm font-semibold text-white">{course.name}</p>
+                <p className="text-xs text-slate-400">
+                  {course.level} · {course.is_featured ? "本院特色" : "常態課程"}
+                </p>
+              </div>
+              <span className={`px-3 py-1 text-xs font-bold rounded-full ${LEVEL_LABELS[course.level]}`}>
+                {course.level}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  ) : null;
+
+  const portalTarget = typeof document !== "undefined" ? document.body : null;
+  const portalContent =
+    portalTarget && modalContent ? createPortal(modalContent, portalTarget) : modalContent;
 
   return (
     <Layout>
@@ -67,44 +119,7 @@ const LearningMapModal = () => {
         ))}
       </main>
 
-      {activeType && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/90 backdrop-blur-lg px-4 py-6">
-          <div className="relative w-full max-w-5xl overflow-hidden rounded-[40px] bg-slate-950/90 p-8 shadow-2xl border border-white/10">
-            <button
-              onClick={handleClose}
-              className="absolute right-6 top-6 text-white/80 hover:text-white"
-            >
-              ✕
-            </button>
-            <header className="border-b border-white/10 pb-4 mb-6">
-              <p className="text-xs uppercase tracking-[0.5em] text-slate-500">課程清單</p>
-              <h2 className="text-3xl font-bold text-white">{activeType.name}</h2>
-              <p className="text-sm text-slate-400">
-                Strategy: {LEARNING_MAP.curriculum_map[0].strategy} · Level: {getTopLevel(activeType)}
-              </p>
-            </header>
-
-            <div className="grid gap-3 max-h-[65vh] overflow-y-auto pr-3">
-              {activeType.courses.map(course => (
-                <div
-                  key={course.name}
-                  className="glass-card rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 flex items-center justify-between gap-4"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-white">{course.name}</p>
-                    <p className="text-xs text-slate-400">
-                      {course.level} · {course.is_featured ? "本院特色" : "常態課程"}
-                    </p>
-                  </div>
-                  <span className={`px-3 py-1 text-xs font-bold rounded-full ${LEVEL_LABELS[course.level]}`}>
-                    {course.level}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      {portalContent}
     </Layout>
   );
 };
