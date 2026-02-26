@@ -80,4 +80,47 @@
     animation: typing var(--typewriter-duration, 1.6s) steps(var(--typewriter-steps, 30), end) forwards;
     animation-delay: var(--typewriter-delay, 0s);
   }
+
+  .glass-card {
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .glass-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    border-color: rgba(56, 189, 248, 0.5);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.2);
+  }
+
+  .level-pro {
+    color: #fb923c;
+    text-shadow: 0 0 10px rgba(251, 146, 60, 0.5);
+  }
+
+  .level-adv {
+    color: #4ade80;
+    text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+  }
+
+  .level-base {
+    color: #38bdf8;
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+  }
+
+  .featured-pulse {
+    position: relative;
+    animation: neonPulse 2s infinite;
+  }
+
+  @keyframes neonPulse {
+    0%,
+    100% {
+      box-shadow: 0 0 5px rgba(56, 189, 248, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.8);
+    }
+  }
 }

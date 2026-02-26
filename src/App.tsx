@@ -5,6 +5,7 @@ import NewbieGuide from "./pages/NewbieGuide";
 import OrgGuide from "./pages/OrgGuide";
 import YearFocus from "./pages/YearFocus";
 import LearningMap from "./pages/LearningMap";
+import LearningMapModal from "./pages/LearningMapModal";
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
         <Route path="/guide/newbie" element={<NewbieGuide />} />
         <Route path="/guide/org" element={<OrgGuide />} />
         <Route path="/learning-map" element={<LearningMap />} />
+        <Route path="/learning-map-modal" element={<LearningMapModal />} />
         <Route path="/focus/yearly" element={<YearFocus />} />
       </Routes>
     </HashRouter>
