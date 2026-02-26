@@ -51,9 +51,9 @@ const StrategyMap = () => {
         </header>
 
         <div className="space-y-5 border-t border-white/10 pt-6">
-          <div className="flex flex-wrap justify-center gap-4">
+          <div className="grid gap-4 justify-center lg:grid-cols-[repeat(5,minmax(220px,1fr))]">
             {highlightStrategy.types.slice(0, 5).map(type => (
-              <div key={type.id} className="flex flex-col gap-2 w-[250px]">
+              <div key={type.id} className="flex flex-col gap-2">
                 <div>
                   <p className="text-xs text-slate-400">TYPE {type.id}</p>
                   <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
