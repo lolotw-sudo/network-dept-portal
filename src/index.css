@@ -1,3 +1,126 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  @keyframes fly-in {
+    0% {
+      transform: translateY(30px) scale(0.98);
+      opacity: 0;
+    }
+    60% {
+      opacity: 1;
+      transform: translateY(-4px) scale(1.02);
+    }
+    100% {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+  }
+
+  .animate-fly-in {
+    animation: fly-in 0.9s ease-out forwards;
+  }
+
+  @keyframes fly-in-exaggerated {
+    0% {
+      transform: translateY(60px) scale(0.7) rotate(-5deg);
+      opacity: 0;
+      filter: blur(10px);
+    }
+    40% {
+      transform: translateY(-18px) scale(1.08) rotate(2deg);
+      opacity: 1;
+      filter: blur(0);
+    }
+    70% {
+      transform: translateY(8px) scale(0.97) rotate(-1deg);
+    }
+    100% {
+      transform: translateY(0) scale(1) rotate(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-fly-in-exaggerated {
+    animation: fly-in-exaggerated 1.2s ease-in-out forwards;
+  }
+
+  .hero-phrase-glow {
+    text-shadow: 0 3px 20px rgba(14, 165, 233, 0.35);
+    animation: glow-breathe 3.8s ease-in-out 0.4s infinite alternate;
+  }
+
+  @keyframes typing {
+    from {
+      max-width: 0;
+    }
+    to {
+      max-width: 100%;
+    }
+  }
+
+  @keyframes glow-breathe {
+    0% {
+      text-shadow: 0 5px 15px rgba(14, 165, 233, 0.35);
+    }
+    50% {
+      text-shadow: 0 20px 50px rgba(14, 165, 233, 0.65);
+    }
+    100% {
+      text-shadow: 0 5px 15px rgba(14, 165, 233, 0.35);
+    }
+  }
+
+  .typewriter {
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 0;
+    animation: typing var(--typewriter-duration, 1.6s) steps(var(--typewriter-steps, 30), end) forwards;
+    animation-delay: var(--typewriter-delay, 0s);
+  }
+
+  .glass-card {
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .glass-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    border-color: rgba(56, 189, 248, 0.5);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.2);
+  }
+
+  .level-pro {
+    color: #fb923c;
+    text-shadow: 0 0 10px rgba(251, 146, 60, 0.5);
+  }
+
+  .level-adv {
+    color: #4ade80;
+    text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+  }
+
+  .level-base {
+    color: #38bdf8;
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+  }
+
+  .featured-pulse {
+    position: relative;
+    animation: neonPulse 2s infinite;
+  }
+
+  @keyframes neonPulse {
+    0%,
+    100% {
+      box-shadow: 0 0 5px rgba(56, 189, 248, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.8);
+    }
+  }
+}

@@ -7,10 +7,14 @@ export const Layout = ({ children }: { children: ReactNode }) => {
       <nav className="bg-bgSurface border-b border-borderSubtle py-4 px-8 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <Link to="/" className="text-xl font-bold tracking-tight">網路學系 Portal</Link>
-          <div className="space-x-6 text-sm font-medium">
-            <Link to="/categories" className="hover:text-btnPrimary">四大分類</Link>
+          <div className="flex flex-wrap gap-6 text-sm font-medium">
+            <Link to="/" className="hover:text-btnPrimary">學系首頁</Link>
+            <Link to="/categories" className="hover:text-btnPrimary">課程介紹</Link>
+            <Link to="/guide/teachers" className="hover:text-btnPrimary">師資介紹</Link>
             <Link to="/guide/newbie" className="hover:text-btnPrimary">新人導覽</Link>
             <Link to="/guide/org" className="hover:text-btnPrimary">組織導覽</Link>
+            <Link to="/strategy-map" className="hover:text-btnPrimary">策略地圖</Link>
+            <Link to="/course-map" className="hover:text-btnPrimary">課程地圖</Link>
           </div>
         </div>
       </nav>

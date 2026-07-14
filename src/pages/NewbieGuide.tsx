@@ -1,188 +1,217 @@
 // src/pages/NewbieGuide.tsx
-import React from "react";
-import { TIS_SAMPLE_URL } from "../data/site-data";
-import { Layout } from "../components/Layout"; // 確保套用全站導覽列
+import { TIS_SAMPLE_URL, CATEGORIES } from "../data/site-data";
+import { Layout } from "../components/Layout";
+import { Link } from "react-router-dom";
+import { ExternalLink, AlertCircle, HelpCircle, ArrowRight, Clock, MonitorPlay } from "lucide-react";
+import { Accordion } from "../components/Accordion";
 
-type StepCardProps = {
-  title: string;
-  desc: string;
-  bullets: string[];
-  primaryCta: { label: string; href: string };
-  secondaryCta?: { label: string; href: string };
-};
-
-function StepCard({ title, desc, bullets, primaryCta, secondaryCta }: StepCardProps) {
-  return (
-    <section className="bg-bgSurface border border-borderSubtle rounded-2xl p-6 shadow-sm">
-      <h2 className="text-xl font-semibold text-textMain">{title}</h2>
-      <p className="mt-2 text-textBody leading-relaxed">{desc}</p>
-
-      <ul className="mt-4 space-y-2 text-textBody list-disc pl-5">
-        {bullets.map((b) => (
-          <li key={b}>{b}</li>
-        ))}
-      </ul>
-
-      <div className="mt-5 flex flex-wrap gap-3">
-        <a
-          className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-white bg-btnPrimary hover:bg-btnPrimaryHover transition font-medium"
-          href={primaryCta.href}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {primaryCta.label}
-        </a>
-
-        {secondaryCta ? (
-          <a
-            className="inline-flex items-center justify-center rounded-xl px-4 py-2 border border-borderSubtle text-textMain hover:bg-bgTabs transition font-medium"
-            href={secondaryCta.href}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {secondaryCta.label}
-          </a>
-        ) : null}
-      </div>
-    </section>
-  );
-}
-
-function InfoRow({ q, a }: { q: string; a: string }) {
-  return (
-    <div className="bg-bgSurface border border-borderSubtle rounded-2xl p-5 shadow-sm">
-      <div className="font-semibold text-textMain">{q}</div>
-      <div className="mt-2 text-textBody leading-relaxed text-sm">{a}</div>
-    </div>
-  );
-}
-
-export default function NewbieGuide() {
+const NewbieGuide = () => {
   return (
     <Layout>
-      <div className="mx-auto max-w-5xl py-6">
-        {/* Header */}
-        <header className="mb-8">
-          <div className="inline-flex items-center rounded-full bg-bgTabs px-3 py-1 text-sm text-textMuted font-medium border border-borderSubtle">
-            新人快速導覽
-          </div>
-          <h1 className="mt-3 text-3xl font-bold text-textMain leading-tight">
-            先學會「怎麼用培訓系統」<br />你就能自己找得到課
-          </h1>
-          <p className="mt-3 text-textBody leading-relaxed max-w-2xl">
-            這頁不是在介紹分類，而是用最短時間讓你掌握：線上課怎麼找、實體課怎麼查、需要報名/派訓時要怎麼做。
+      <div className="max-w-4xl mx-auto py-8">
+        
+        {/* Block 0｜頁面定位 (Hero) */}
+        <header className="mb-12 border-l-4 border-btnPrimary pl-6">
+          <h1 className="text-3xl font-black text-textMain mb-3 italic">新人怎麼找課，才不會走錯？</h1>
+          <p className="text-textMuted text-lg leading-relaxed">
+            這一頁不是課程介紹，而是教你怎麼使用公司的培訓系統。
           </p>
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            <a
-              className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-white bg-btnPrimary hover:bg-btnPrimaryHover transition shadow-md font-bold"
-              href={TIS_SAMPLE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              直接進入課程查詢系統
-            </a>
-
-            <a
-              className="inline-flex items-center justify-center rounded-xl px-6 py-3 border border-borderSubtle text-textMain bg-bgSurface hover:bg-bgTabs transition font-bold"
-              href={TIS_SAMPLE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              我想先看看目前有哪些班
-            </a>
-          </div>
-
-          <div className="mt-4 text-xs text-textMuted">
-            ※ 外連為公司既有系統（第一版先用範例 URL；你後續可自行調整參數）
-          </div>
         </header>
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <StepCard
-            title="A. 我想上線上課（先補觀念 / 先備知識）"
-            desc="當你想先建立基本認知，或還不確定該選哪一類課程，先用線上課把名詞與架構補起來最快。"
-            bullets={[
-              "先從「課程查詢系統」進入，確認是否有線上課/數位教材分類入口",
-              "用關鍵字搜尋：例如「接取」、「核心」、「網安」、「AIoT」等",
-              "先把基礎課上完，再回來找對應的實體課（效率最高）",
-            ]}
-            primaryCta={{ label: "前往系統找線上課", href: TIS_SAMPLE_URL }}
-          />
-
-          <StepCard
-            title="B. 我想找實體課（要被派訓 / 想報名開班）"
-            desc="當你要報名、被派訓、或要找近期開班資訊，實體課以公司系統顯示為準。"
-            bullets={[
-              "先用「班名/關鍵字」查：例如你聽到的課程名稱、或核心技術名詞",
-              "如果不確定課名，用領域關鍵字查，再用時間/地點/狀態篩選",
-              "需要派訓/報名流程時，依你們單位規定走內部流程（系統資訊作為查詢依據）",
-            ]}
-            primaryCta={{ label: "前往系統查實體課/開班", href: TIS_SAMPLE_URL }}
-          />
+{/* Block 0.5｜起點引導 - 雙圖片可點擊版本 */}
+<section className="mb-16">
+  <div className="bg-bgSurface border-2 border-dashed border-borderSubtle rounded-3xl p-8">
+    <div className="flex flex-col md:flex-row gap-8 items-center">
+      
+      {/* 左側：文字說明 */}
+      <div className="flex-1">
+        <div className="inline-block px-3 py-1 rounded-full bg-btnPrimary/10 text-btnPrimary text-xs font-bold mb-4">
+          STEP 0：起點
         </div>
+        <h2 className="text-2xl font-bold text-textMain mb-4">先從公司 EIP 入口進入</h2>
+        <p className="text-textBody leading-relaxed mb-6">
+          所有的學習資源都整合在公司的入口網站。請先登入公司首頁 EIP 系統，在首頁左側選單找到「<span className="text-btnPrimary font-bold">課程學習</span>」（圖示為一本藍色的書），點擊後即可進入電信學院課程平台。
+        </p>
+        
+        {/* 網址提示小卡 */}
+        <div className="bg-bgPage p-4 rounded-xl border border-borderSubtle border-l-4 border-l-btnPrimary">
+          <p className="text-xs font-bold text-textMain mb-1">培訓系統直接連結：</p>
+          <code className="text-sm text-btnPrimary font-mono">https://elearning.cht.com.tw</code>
+        </div>
+      </div>
 
-        {/* Quick mental model */}
-        <section className="mt-10 bg-bgSurface border border-borderSubtle rounded-2xl p-8 shadow-sm">
-          <h2 className="text-xl font-bold text-textMain mb-6">一個新人的「查課心法」</h2>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div className="rounded-2xl bg-bgPage p-5 border border-borderSubtle">
-              <div className="font-bold text-btnPrimary mb-2 text-sm">STEP 1</div>
-              <div className="font-semibold text-textMain">先想「要解決什麼」</div>
-              <div className="mt-2 text-textBody text-xs leading-relaxed">
-                先備知識？要上手系統？要跟上專案？要能處理現場問題？
+      {/* 右側：雙圖片點擊區 */}
+      <div className="flex-1 grid grid-cols-1 gap-4 w-full">
+        
+        {/* 圖一：EIP 入口 (點擊前往 EIP) */}
+        <a 
+          href="https://eip.cht.com.tw" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="relative group overflow-hidden rounded-xl border border-borderSubtle shadow-sm block"
+        >
+          {/* 穿透層 */}
+          <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+            <span className="bg-white/90 text-textMain px-3 py-1.5 rounded-lg font-bold text-xs shadow-md">
+              前往 EIP 首頁
+            </span>
+          </div>
+          <img 
+            src={`${import.meta.env.BASE_URL}images/eip_portal.png`} 
+            alt="EIP 入口選單" 
+            className="w-full h-auto transition-transform duration-500 group-hover:scale-105" 
+          />
+        </a>
+
+        {/* 圖二：TIS 入口 (點擊前往 TIS) */}
+        <a 
+          href="https://elearning.cht.com.tw/allsearch/index.jsp" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="relative group overflow-hidden rounded-xl border-2 border-transparent hover:border-btnPrimary transition-all shadow-sm block"
+        >
+          {/* 穿透層：加上 pointer-events-none 確保不擋住點擊 */}
+          <div className="absolute inset-0 bg-btnPrimary/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+            <span className="bg-btnPrimary text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg">
+              點擊前往學院課程入口
+            </span>
+          </div>
+          <img 
+            src={`${import.meta.env.BASE_URL}images/tis_home.png`} 
+            alt="培訓系統首頁" 
+            className="w-full h-auto" 
+          />
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {/* 下向引導箭頭 */}
+  <div className="flex justify-center mt-8">
+    <div className="animate-bounce p-2 bg-bgSurface rounded-full border border-borderSubtle shadow-sm">
+      <ArrowRight size={24} className="text-btnPrimary rotate-90" />
+    </div>
+  </div>
+</section>
+
+        {/* Block 1｜主路徑選擇 */}
+        <section className="grid md:grid-cols-2 gap-6 mb-16">
+          {/* A 卡：同步課程 */}
+          <div className="bg-bgSurface border border-borderSubtle rounded-2xl p-8 flex flex-col shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-blue-50 text-btnPrimary rounded-lg"><Clock size={24} /></div>
+              <h2 className="text-xl font-bold text-textMain">A. 實體課 / 直播課</h2>
+            </div>
+            <p className="text-sm font-bold text-btnPrimary mb-2">有排定開課時間的課</p>
+            <ul className="text-sm text-textBody space-y-3 mb-8 flex-grow">
+              <li className="flex items-start gap-2">• 同步、有固定時間</li>
+              <li className="flex items-start gap-2">• 課程分批排出來（近兩個月較完整）</li>
+              <li className="flex items-start gap-2">• 先找到課再看時間能否配合</li>
+            </ul>
+            <div className="mt-6 space-y-4">
+              {CATEGORIES.map((cat, idx) => (
+                <div key={cat.id} className="space-y-2">
+                  {idx > 0 && <div className="h-px bg-borderSubtle" />}
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {cat.subDomains.map(sub => (
+                      <a
+                        key={`${cat.id}-${sub.label}`}
+                        href={`${TIS_SAMPLE_URL}${sub.dtype2 ? `&dtype2=${sub.dtype2}` : ""}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 rounded-xl border border-borderSubtle bg-white/80 text-sm font-semibold text-textMain hover:border-btnPrimary hover:bg-btnPrimary/10 transition"
+                      >
+                        {sub.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* B 卡：非同步課程 */}
+          <div className="bg-bgSurface border border-borderSubtle rounded-2xl p-8 flex flex-col shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg"><MonitorPlay size={24} /></div>
+              <h2 className="text-xl font-bold text-textMain">B. 預錄課 (E-Learning)</h2>
+            </div>
+            <p className="text-sm font-bold text-emerald-600 mb-2">沒有時間限制的課 隨時可上</p>
+            <div className="text-sm text-textBody space-y-3 mb-6 flex-grow">
+              <p>• 補觀念/補能力；不用等開課、不用搶名額</p>
+              <p>• 適合在找不到實體課時使用</p>
+              <div className="bg-bgTabs p-4 rounded-xl flex gap-3 items-start mt-4 border border-borderSubtle">
+                <AlertCircle size={20} className="text-btnPrimary shrink-0" />
+                <p className="text-xs font-bold text-textMain leading-relaxed">
+                  ⚠️ 重要：找預錄課請用「<span className="underline decoration-2 underline-offset-4">分類課程</span>」，<br/>不要用「經驗傳承」。
+                </p>
               </div>
             </div>
-            <div className="rounded-2xl bg-bgPage p-5 border border-borderSubtle">
-              <div className="font-bold text-btnPrimary mb-2 text-sm">STEP 2</div>
-              <div className="font-semibold text-textMain">用關鍵字縮小範圍</div>
-              <div className="mt-2 text-textBody text-xs leading-relaxed">
-                用技術名詞、領域名詞、或課名片段先查到「候選清單」。
-              </div>
-            </div>
-            <div className="rounded-2xl bg-bgPage p-5 border border-borderSubtle">
-              <div className="font-bold text-btnPrimary mb-2 text-sm">STEP 3</div>
-              <div className="font-semibold text-textMain">看開班狀態與方式</div>
-              <div className="mt-2 text-textBody text-xs leading-relaxed">
-                線上課就先上；實體課看開班時間與派訓/報名規則。
-              </div>
-            </div>
+            <a 
+              href={TIS_SAMPLE_URL} 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full bg-white border-2 border-btnPrimary text-btnPrimary hover:bg-bgTabs text-center py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2"
+            >
+              前往 elearning（分類課程） <ExternalLink size={16} />
+            </a>
           </div>
         </section>
 
-        {/* FAQ */}
-        <section className="mt-10">
-          <h2 className="text-xl font-bold text-textMain mb-6">新人常見問題</h2>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <InfoRow
-              q="我不知道要輸入什麼關鍵字？"
-              a="先從你手上的工作內容出發：接取/線路、核心/IP、網安、AIoT 等，再用課名片段或技術名詞逐步縮小。"
-            />
-            <InfoRow
-              q="我看到了課，但不知道要報名？"
-              a="第一步先以系統資訊確認開班與課程方式；派訓/報名流程依各單位內規走。你也可以把課名截圖給前輩或窗口確認。"
-            />
+        {/* Block 2｜常見誤會澄清 */}
+        <section className="mb-16 bg-bgTabs/50 p-8 rounded-3xl border border-borderSubtle">
+          <h2 className="text-xl font-bold text-textMain mb-8 text-center flex items-center justify-center gap-2">
+            <HelpCircle size={22} className="text-btnPrimary" /> 常見誤會澄清
+          </h2>
+          <div className="grid sm:grid-cols-2 gap-6">
+            {[
+              { q: "查不到課 ≠ 沒有課", a: "可能只是還沒排出來。" },
+              { q: "填了培訓調查 ≠ 報名", a: "那只是意願調查，正式報名需回系統點選。" },
+              { q: "看不到某些課 ≠ 不存在", a: "可能是特定單位的「派訓課」。" },
+              { q: "看得到報不到 ≠ 你慢", a: "可能是職等、年資或單位限制。" },
+            ].map((item, idx) => (
+              <div key={idx} className="flex gap-4">
+                <div className="text-btnPrimary font-black text-xl opacity-20">0{idx + 1}</div>
+                <div>
+                  <div className="text-sm text-textMuted mb-1 italic">你可能會以為...</div>
+                  <div className="font-bold text-textMain mb-1">{item.q}</div>
+                  <div className="text-sm text-btnPrimary font-medium flex items-center gap-1">
+                    <ArrowRight size={14} /> 其實是：{item.a}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
-        {/* Footer actions */}
-        <section className="mt-12 pt-8 border-t border-borderSubtle flex flex-wrap gap-4 justify-center">
-          <a
-            className="inline-flex items-center justify-center rounded-xl px-8 py-3 text-white bg-btnPrimary hover:bg-btnPrimaryHover transition font-bold shadow-md"
-            href={TIS_SAMPLE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            再次前往課程查詢系統
-          </a>
-          <a
-            className="inline-flex items-center justify-center rounded-xl px-8 py-3 border border-borderSubtle text-textMain bg-bgSurface hover:bg-bgTabs transition font-bold"
-            href="/categories"
-          >
-            我已懂系統操作，想看四大領域
-          </a>
+        {/* Block 3｜補充說明 (Accordion) */}
+        <section className="mb-16">
+          <h2 className="text-sm font-black text-textMuted uppercase tracking-widest mb-6 text-center">補充說明 (FAQ)</h2>
+          <Accordion title="為什麼有些課要用派訓？">
+            為了確保特定業務單位的同仁能優先取得必備證照或技術，系統會根據組織名單直接帶入受訓人員。這類課程不對全公司開放。
+          </Accordion>
+          <Accordion title="為什麼系統近兩個月資訊比較完整？">
+            技術課程多由內部專家授課，需配合專案維運動態調整。建議以此兩月內的資訊為主要報名依據。
+          </Accordion>
         </section>
+
+        {/* Block 4｜出口與延伸 */}
+        <footer className="flex flex-col sm:flex-row items-center justify-between p-8 border-t border-borderSubtle bg-white rounded-2xl">
+          <div className="mb-4 sm:mb-0">
+            <h3 className="font-bold text-textMain mb-1">我已懂怎麼找課</h3>
+            <p className="text-xs text-textMuted">下一步，去看看具體的四大技術領域吧！</p>
+          </div>
+          <div className="flex gap-4">
+            <Link to="/categories" className="px-6 py-2 rounded-lg text-sm font-bold bg-bgTabs text-textMain hover:bg-tabHover transition-colors">
+              去看四大領域
+            </Link>
+            <a href={TIS_SAMPLE_URL} target="_blank" rel="noopener noreferrer" className="px-6 py-2 rounded-lg text-sm font-bold text-textMuted hover:text-textMain transition-colors flex items-center gap-1">
+              再次前往培訓系統 <ExternalLink size={14} />
+            </a>
+          </div>
+        </footer>
       </div>
     </Layout>
   );
-}
+};
+
+export default NewbieGuide;

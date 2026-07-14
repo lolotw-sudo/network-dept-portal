@@ -1,8 +1,10 @@
 // src/pages/Home.tsx
+import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { CATEGORIES } from "../data/site-data";
-import { ArrowRight, Globe, Shield, Cpu, Activity } from "lucide-react";
+import { ArrowRight, Globe, Shield, Cpu, Activity, BookOpen, Users, MapPin } from "lucide-react";
+import StrategyPreview from "../components/StrategyPreview";
 
 // 定義分類對應的圖示（增加視覺科技感）
 const ICON_MAP: Record<string, any> = {
@@ -12,53 +14,105 @@ const ICON_MAP: Record<string, any> = {
   aiot: Activity,
 };
 
+const HERO_QUICK_NAV = [
+  {
+    to: "/categories",
+    label: "課程介紹",
+    desc: "探索分類與路徑",
+    Icon: BookOpen,
+  },
+  {
+    to: "/guide/teachers",
+    label: "師資介紹",
+    desc: "認識授課專家",
+    Icon: Users,
+  },
+  {
+    to: "/guide/newbie",
+    label: "新人導覽",
+    desc: "快速上手",
+    Icon: MapPin,
+  },
+];
+
 const Home = () => {
   return (
     <Layout>
-      {/* Hero Section - 科技感大標題區 */}
+      {/* Hero Sectˇㄓ35ion - 科技感大標題區 */}
       <div className="relative overflow-hidden rounded-3xl mb-12 bg-slate-900 py-20 px-8 text-center shadow-2xl">
         {/* 背景裝飾圖片 - 使用你上傳的 bg_hero.jpg */}
-        <div 
+       1010 <div 
           className="absolute inset-0 opacity-30 bg-cover bg-center mix-blend-overlay"
-          style={{ backgroundImage: "url('/images/bg_hero.jpg')" }}
+          style={{ backgroundImage: "url('./images/bg_hero.jpg')" }}
         ></div>
         
        {/* 動態科技紋理 - 呼吸慢一點的版本 */}
 <div 
   className="absolute inset-0 opacity-10 animate-[pulse_4s_ease-in-out_infinite]"
-  style={{ backgroundImage: "url('/images/pattern_circuit.png')", backgroundSize: '400px' }}
+  style={{ backgroundImage: "url('./images/pattern_circuit.png')", backgroundSize: '400px' }}
 ></div>
 
         <div className="relative z-10">
           <div className="inline-block px-4 py-1.5 mb-6 text-m font-bold tracking-widest text-blue-400 uppercase bg-blue-400/10 border border-blue-400/20 rounded-full">
             中華電信學院 網路學系 板橋院本部
           </div>
-          <h1 className="text-5xl md:text-6xl font-black text-white mb-8 tracking-tight">
-            掌握網路技術脈絡 <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
+          <h1 className="text-5xl md:text-6xl font-black text-white mb-8 tracking-tight leading-tight">
+            <span className="typewriter hero-phrase-glow block">掌握網路技術脈絡</span>
+
+            <br></br>
+            <span
+              className="typewriter hero-phrase-glow block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400"
+              style={{ "--typewriter-delay": "0.45s", "--typewriter-duration": "1.8s", "--typewriter-steps": "28" } as CSSProperties}
+            >
               賦能數位連結未來
             </span>
           </h1>
           <p className="text-slate-300 text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
-            這是專為同仁設計的網路學系導覽入口，<br className="hidden md:block"/>
-            從基礎線路到 AI 智聯網，加速您的專業成長曲線。
+            這是專為中華電信同仁設計的網路學系導覽入口，<br className="hidden md:block"/>
+            從基礎線路到 AI 智聯網，加速您的專業成長曲線，為您串聯海地星空。
           </p>
 
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link 
-              to="/guide/newbie" 
-              className="group px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold transition-all duration-300 shadow-lg shadow-blue-600/30 flex items-center hover:-translate-y-1"
-            >
-              我是新人，從哪開始？
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
+          <div className="mt-4 flex flex-wrap justify-center gap-4">
+            {HERO_QUICK_NAV.map(({ to, label, desc, Icon }) => (
+              <Link
+                key={label}
+                to={to}
+                className="group relative flex flex-col items-center gap-3 min-w-[240px] px-6 pt-6 pb-4 bg-white/5 backdrop-blur-sm shadow-[0_20px_45px_rgba(2,6,23,0.35)] overflow-hidden transition-all duration-300 hover:-translate-y-1"
+              >
+                <span
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] rounded-none bg-gradient-to-t from-slate-200/80 via-sky-400/60 to-sky-500/80 opacity-0 translate-y-full transition-[opacity,transform] duration-700 ease-out delay-100 group-hover:opacity-90 group-hover:translate-y-0"
+                  style={{
+                    clipPath:
+                      'path("M0 80 Q40 40 80 70 T160 60 T240 75 T320 55 L360 120 L0 120 Z")',
+                  }}
+                ></span>
+                <span
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-[40%] rounded-none opacity-0 translate-y-full transition-[opacity,transform] duration-700 ease-out delay-150 group-hover:opacity-80 group-hover:translate-y-0"
+                  style={{
+                    backgroundImage:
+                      "radial-gradient(circle at 50% 0, rgba(255,255,255,0.45), rgba(255,255,255,0))",
+                    clipPath:
+                      'path("M0 40 Q40 10 80 35 Q120 60 160 30 Q200 5 240 35 Q280 60 320 25 L360 80 L0 80 Z")',
+                  }}
+                ></span>
+                <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 via-sky-500 to-emerald-400 text-white shadow-xl transition-transform duration-300 group-hover:scale-105">
+                  <Icon className="w-7 h-7" />
+                </div>
+                <div className="flex flex-col items-center text-center gap-1 min-h-[58px] relative z-10">
+                  <span className="font-black text-2xl leading-none text-white">{label}</span>
+                  <span className="text-xs text-white/70">{desc}</span>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </div>
 
+      <StrategyPreview />
+
       {/* 四大分類區 - 加入滑鼠互動放大效果 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-        {CATEGORIES.map((cat) => {
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+        {CATEGORIES.map((cat, idx) => {
           const IconComponent = ICON_MAP[cat.id] || Globe;
           return (
             <Link 
@@ -75,7 +129,7 @@ const Home = () => {
                 </div>
                 
                 <div className="text-blue-600 font-bold text-xs mb-2 tracking-widest uppercase">
-                  SECTION {cat.id}
+                  網路學系課程介紹{idx + 1}
                 </div>
                 <h3 className="text-xl font-bold mb-3 text-slate-800">{cat.title}</h3>
                 <p className="text-slate-500 text-sm leading-relaxed mb-4">

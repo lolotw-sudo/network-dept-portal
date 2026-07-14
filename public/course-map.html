@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>115 網路學系 學習地圖</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05080f;
+  --bg2:#0a101e;
+  --panel:rgba(16,24,42,.72);
+  --line:rgba(120,180,255,.14);
+  --txt:#dce8ff;
+  --dim:#7d8db0;
+  --accent:#00e5ff;
+  --lv-basic:#3ddc84;
+  --lv-adv:#ffb648;
+  --lv-pro:#ff5d8f;
+  --r:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:var(--bg);
+  color:var(--txt);
+  font-family:'Noto Sans TC',system-ui,sans-serif;
+  overflow-x:hidden;
+}
+#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+.grid-overlay{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    linear-gradient(rgba(0,229,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,229,255,.025) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse at 50% 38%,#000 30%,transparent 78%);
+}
+.app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+/* ---------- header ---------- */
+header{
+  display:flex;align-items:center;gap:22px;flex-wrap:wrap;
+  padding:18px 32px;
+  border-bottom:1px solid var(--line);
+  backdrop-filter:blur(8px);
+  background:linear-gradient(180deg,rgba(8,13,26,.85),rgba(8,13,26,.4));
+  position:sticky;top:0;z-index:50;
+}
+.brand{display:flex;align-items:center;gap:14px;cursor:pointer}
+.brand .mark{
+  width:40px;height:40px;border-radius:10px;flex:none;
+  background:conic-gradient(from 210deg,#00e5ff,#2f7bff,#7c6cff,#00e5ff);
+  position:relative;box-shadow:0 0 22px rgba(0,229,255,.45);
+}
+.brand .mark::after{content:"";position:absolute;inset:3px;border-radius:8px;background:var(--bg);
+  background-image:radial-gradient(circle at 30% 30%,rgba(0,229,255,.5),transparent 60%)}
+.brand h1{font-size:19px;font-weight:900;letter-spacing:1px;line-height:1.15}
+.brand h1 small{display:block;font-family:'Rajdhani';font-size:11px;font-weight:600;letter-spacing:4px;color:var(--accent);text-transform:uppercase}
+.statchips{display:flex;gap:10px;flex-wrap:wrap}
+.chip{
+  font-family:'Rajdhani';font-weight:600;font-size:13px;letter-spacing:1px;
+  padding:6px 14px;border:1px solid var(--line);border-radius:999px;color:var(--dim);
+  background:rgba(255,255,255,.02);white-space:nowrap;
+}
+.chip b{color:var(--txt);font-size:15px;margin-right:3px}
+.searchbox{margin-left:auto;position:relative}
+.searchbox input{
+  width:250px;padding:9px 16px 9px 38px;border-radius:999px;
+  border:1px solid var(--line);background:rgba(10,18,34,.8);color:var(--txt);
+  font-family:inherit;font-size:13px;outline:none;transition:.25s;
+}
+.searchbox input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,229,255,.12);width:300px}
+.searchbox svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:.5}
+
+/* ---------- views ---------- */
+.view{flex:1;display:none;animation:fadeIn .45s cubic-bezier(.2,.8,.2,1)}
+.view.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* ---------- overview : L1/L2 matrix ---------- */
+#overview{padding:38px 40px 26px;min-height:calc(100vh - 160px)}
+.view.active#overview{display:flex;flex-direction:column}
+.ov-title{text-align:center;margin-bottom:34px}
+.ov-title .en{font-family:'Rajdhani';font-size:12px;font-weight:600;letter-spacing:6px;color:var(--accent)}
+.ov-title h2{font-size:26px;font-weight:900;letter-spacing:3px;margin-top:4px}
+.ov-title .sub{font-size:12.5px;color:var(--dim);letter-spacing:2px;margin-top:8px}
+.matrix{
+  display:grid;gap:13px;max-width:1560px;width:100%;margin:0 auto;
+  grid-template-columns:44px repeat(4,1fr) 1.9fr 1.1fr 1.5fr;
+}
+.lvlab{
+  display:flex;align-items:center;justify-content:center;border-radius:10px;
+  border:1px dashed rgba(120,180,255,.22);color:var(--dim);
+  font-family:'Rajdhani';font-weight:700;letter-spacing:4px;font-size:12px;
+  writing-mode:vertical-rl;text-orientation:mixed;padding:14px 0;
+}
+.tile{opacity:0;transform:translateY(14px);animation:tileIn .5s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes tileIn{to{opacity:1;transform:none}}
+.l1tile{
+  cursor:pointer;border:1px solid var(--c);border-radius:12px;padding:17px 10px;
+  text-align:center;position:relative;overflow:hidden;transition:.25s;
+  background:linear-gradient(160deg,var(--g),rgba(11,17,33,.92) 70%);
+}
+.l1tile::after{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--c);box-shadow:0 0 14px var(--c)}
+.l1tile .idx{font-family:'Rajdhani';font-weight:700;font-size:11px;letter-spacing:3px;color:var(--c)}
+.l1tile .nm{font-weight:900;font-size:16.5px;letter-spacing:1px;line-height:1.35;margin-top:3px}
+.l1tile:hover{transform:translateY(-4px);box-shadow:0 10px 34px var(--g)}
+.netzone{grid-column:2/6;display:grid;grid-template-columns:repeat(4,1fr);gap:13px;align-content:start}
+.colstack{display:grid;gap:13px;align-content:start}
+.colstack.two{grid-template-columns:1fr 1fr}
+.l2tile{
+  cursor:pointer;border:1px solid var(--line);border-left:3px solid var(--c);border-radius:10px;
+  padding:11px 13px;font-size:13.5px;display:flex;align-items:center;gap:9px;min-height:54px;
+  background:rgba(14,21,40,.62);transition:.22s;color:var(--txt);line-height:1.35;
+}
+.l2tile .no{font-family:'Rajdhani';color:var(--c);font-weight:700;font-size:12.5px;flex:none}
+.l2tile:hover{border-color:var(--c);background:var(--g);transform:translateX(4px);box-shadow:0 4px 18px var(--g)}
+.l2tile.span{
+  grid-column:1/-1;justify-content:center;border-left:none;font-weight:700;letter-spacing:2px;
+  border:1px solid rgba(0,229,255,.4);
+  background:linear-gradient(90deg,rgba(0,229,255,.13),rgba(124,108,255,.13),rgba(255,182,72,.13),rgba(47,123,255,.13));
+}
+.l2tile.span:hover{transform:translateY(-3px);box-shadow:0 6px 24px rgba(0,229,255,.18)}
+.l2tile.span .no{color:var(--accent)}
+.ov-hint{
+  margin:34px auto 0;font-size:12px;color:var(--dim);letter-spacing:3px;
+  display:flex;align-items:center;gap:10px;justify-content:center;
+}
+.ov-hint .pulse{width:7px;height:7px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 0 0 rgba(0,229,255,.6);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 12px rgba(0,229,255,0)}100%{box-shadow:0 0 0 0 rgba(0,229,255,0)}}
+
+/* mobile overview grid */
+.ov-grid{display:none;padding:6px 0;gap:14px;grid-template-columns:1fr}
+.ovcard{border:1px solid var(--line);border-radius:var(--r);padding:18px;background:var(--panel)}
+.ovcard .idx{font-family:'Rajdhani';font-size:11px;letter-spacing:3px}
+.ovcard .nm{font-weight:900;font-size:17px;margin:4px 0 12px;cursor:pointer}
+.ovcard .chips{display:flex;flex-wrap:wrap;gap:8px}
+.ovcard .chips .l2tile{min-height:0;padding:8px 13px;font-size:12.5px}
+
+/* ---------- domain view ---------- */
+#domain{padding:26px 38px 70px}
+.crumbs{display:flex;align-items:center;gap:10px;font-family:'Rajdhani';font-weight:600;
+  font-size:14px;letter-spacing:2px;color:var(--dim);margin-bottom:22px}
+.crumbs a{color:var(--dim);text-decoration:none;cursor:pointer;transition:.2s}
+.crumbs a:hover{color:var(--accent)}
+.crumbs .sep{opacity:.4}
+.crumbs .cur{color:var(--txt)}
+.backbtn{
+  display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+  font-size:13px;letter-spacing:1px;color:var(--dim);
+  border:1px solid var(--line);border-radius:999px;padding:7px 18px;margin-right:8px;
+  transition:.25s;background:rgba(255,255,255,.02);
+}
+.backbtn:hover{color:var(--accent);border-color:var(--accent);transform:translateX(-3px)}
+
+.dhead{
+  position:relative;border-radius:var(--r);padding:30px 34px;margin-bottom:26px;overflow:hidden;
+  background:var(--panel);border:1px solid var(--line);
+}
+.dhead::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--dc)}
+.dhead::after{content:"";position:absolute;right:-60px;top:-80px;width:340px;height:340px;border-radius:50%;
+  background:radial-gradient(circle,var(--dc-glow),transparent 70%);pointer-events:none}
+.dhead .row{display:flex;align-items:flex-end;gap:26px;flex-wrap:wrap;position:relative;z-index:1}
+.dhead .code{font-family:'Rajdhani';font-weight:700;font-size:15px;letter-spacing:5px;color:var(--dc)}
+.dhead h2{font-size:34px;font-weight:900;letter-spacing:2px;line-height:1.1}
+.dstats{display:flex;gap:30px;margin-left:auto;flex-wrap:wrap}
+.dstat{text-align:center}
+.dstat .v{font-family:'Rajdhani';font-weight:700;font-size:30px;color:var(--dc);line-height:1}
+.dstat .k{font-size:11px;color:var(--dim);letter-spacing:2px;margin-top:4px}
+.dlvbar{position:relative;z-index:1;margin-top:20px;display:flex;height:8px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,.06)}
+.dlvbar i{height:100%;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.dlvlabels{display:flex;gap:22px;margin-top:9px;font-size:12px;color:var(--dim)}
+.dlvlabels b{color:var(--txt);font-family:'Rajdhani';font-size:14px}
+
+.l2pills{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.pill{
+  cursor:pointer;padding:10px 22px;border-radius:999px;border:1px solid var(--line);
+  background:rgba(255,255,255,.025);font-size:14px;font-weight:500;letter-spacing:1px;
+  color:var(--dim);transition:.25s;display:flex;align-items:center;gap:9px;
+}
+.pill .n{font-family:'Rajdhani';font-weight:700;font-size:13px;opacity:.8}
+.pill:hover{color:var(--txt);border-color:var(--dc);transform:translateY(-2px)}
+.pill.on{color:#04101c;background:var(--dc);border-color:var(--dc);font-weight:700;
+  box-shadow:0 4px 22px var(--dc-glow)}
+
+.filters{display:flex;gap:8px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
+.filters .lab{font-size:12px;color:var(--dim);letter-spacing:2px;margin-right:4px}
+.fchip{cursor:pointer;font-size:12px;padding:6px 15px;border-radius:999px;border:1px solid var(--line);
+  color:var(--dim);transition:.2s;letter-spacing:1px}
+.fchip:hover{color:var(--txt)}
+.fchip.on{color:#04101c;font-weight:700}
+.fchip[data-lv="全部"].on{background:var(--txt);border-color:var(--txt)}
+.fchip[data-lv="基礎"].on{background:var(--lv-basic);border-color:var(--lv-basic)}
+.fchip[data-lv="進階"].on{background:var(--lv-adv);border-color:var(--lv-adv)}
+.fchip[data-lv="專業"].on{background:var(--lv-pro);border-color:var(--lv-pro)}
+
+.l2meta{
+  border:1px solid var(--line);border-radius:var(--r);padding:18px 24px;margin-bottom:22px;
+  background:linear-gradient(120deg,rgba(255,255,255,.03),transparent 60%);
+  display:flex;gap:34px;flex-wrap:wrap;font-size:13px;
+}
+.l2meta .item{min-width:200px;flex:1}
+.l2meta .k{font-size:11px;letter-spacing:2px;color:var(--dim);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.l2meta .k i{width:6px;height:6px;border-radius:50%;background:var(--dc);box-shadow:0 0 8px var(--dc)}
+.l2meta .v{line-height:1.7;color:var(--txt)}
+
+/* L3 sections */
+.l3sec{margin-bottom:30px}
+.l3title{
+  display:flex;align-items:center;gap:14px;margin-bottom:14px;
+  font-size:17px;font-weight:900;letter-spacing:2px;
+}
+.l3title::before{content:"";width:22px;height:2px;background:var(--dc);box-shadow:0 0 10px var(--dc)}
+.l3title .cnt{font-family:'Rajdhani';font-weight:700;font-size:13px;color:var(--dc);letter-spacing:1px}
+.l3meta{font-size:12px;color:var(--dim);margin:-6px 0 14px 36px;line-height:1.8}
+.l3meta b{color:#a9bcdf;font-weight:500}
+
+/* group accordion */
+.grp{border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden;
+  background:rgba(12,19,36,.55);transition:border-color .25s}
+.grp:hover{border-color:rgba(120,180,255,.3)}
+.grp.open{border-color:var(--dc)}
+.grp-h{
+  display:flex;align-items:center;gap:14px;padding:15px 20px;cursor:pointer;user-select:none;
+  transition:background .2s;
+}
+.grp-h:hover{background:rgba(255,255,255,.03)}
+.grp-h .arrow{width:22px;height:22px;border-radius:6px;flex:none;display:grid;place-items:center;
+  border:1px solid var(--line);transition:.3s;font-size:11px;color:var(--dc)}
+.grp.open .grp-h .arrow{transform:rotate(90deg);border-color:var(--dc);background:rgba(0,229,255,.08)}
+.grp-h .gname{font-weight:700;letter-spacing:1px;font-size:15px}
+.grp-h .gcnt{font-family:'Rajdhani';font-weight:600;font-size:13px;color:var(--dim);margin-left:auto;letter-spacing:1px}
+.grp-h .minibar{display:flex;width:80px;height:4px;border-radius:2px;overflow:hidden;background:rgba(255,255,255,.07)}
+.grp-h .minibar i{height:100%}
+.grp-b{max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(.2,.8,.2,1)}
+.grp.open .grp-b{max-height:4000px}
+.clist{padding:4px 14px 14px}
+
+.crow{
+  display:flex;align-items:center;gap:13px;padding:11px 14px;border-radius:9px;
+  border-left:2px solid transparent;transition:.2s;position:relative;
+}
+.crow:hover{background:rgba(255,255,255,.04);border-left-color:var(--dc);transform:translateX(5px)}
+.crow .lv{flex:none;width:44px;text-align:center;font-size:11px;font-weight:700;letter-spacing:1px;
+  padding:4px 0;border-radius:5px}
+.lv.基礎{color:var(--lv-basic);background:rgba(61,220,132,.12);border:1px solid rgba(61,220,132,.35)}
+.lv.進階{color:var(--lv-adv);background:rgba(255,182,72,.12);border:1px solid rgba(255,182,72,.35)}
+.lv.專業{color:var(--lv-pro);background:rgba(255,93,143,.12);border:1px solid rgba(255,93,143,.35)}
+.lv.未判讀{color:var(--dim);background:rgba(255,255,255,.05);border:1px solid var(--line)}
+.crow .cname{font-size:14px;flex:1;line-height:1.5}
+.crow .tags{display:flex;gap:6px;flex:none;flex-wrap:wrap;justify-content:flex-end}
+.tag{font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--dim);letter-spacing:1px;white-space:nowrap}
+.tag.hours{font-family:'Rajdhani';font-weight:600;color:#a9bcdf}
+.tag.digital{color:var(--accent);border-color:rgba(0,229,255,.4);background:rgba(0,229,255,.07)}
+.tag.new{color:#ffd166;border-color:rgba(255,209,102,.45);background:rgba(255,209,102,.08);animation:newpulse 2.2s infinite}
+@keyframes newpulse{50%{box-shadow:0 0 12px rgba(255,209,102,.35)}}
+.crow.hidden{display:none}
+.empty{padding:30px;text-align:center;color:var(--dim);font-size:13px;letter-spacing:2px}
+
+/* ---------- search results ---------- */
+#searchres{
+  position:fixed;top:78px;right:32px;width:480px;max-width:calc(100vw - 40px);max-height:62vh;overflow:auto;
+  background:rgba(10,16,30,.97);border:1px solid var(--line);border-radius:var(--r);z-index:99;
+  box-shadow:0 18px 60px rgba(0,0,0,.6);display:none;backdrop-filter:blur(10px);
+}
+#searchres.show{display:block;animation:fadeIn .25s}
+#searchres .sr-h{padding:12px 18px;font-size:12px;color:var(--dim);letter-spacing:2px;border-bottom:1px solid var(--line)}
+.sr-item{padding:12px 18px;cursor:pointer;transition:.15s;border-bottom:1px solid rgba(120,180,255,.06)}
+.sr-item:hover{background:rgba(0,229,255,.06)}
+.sr-item .p{font-size:11px;color:var(--dim);letter-spacing:1px;margin-bottom:3px}
+.sr-item .n{font-size:13.5px;display:flex;align-items:center;gap:9px}
+.sr-item .n .dot{width:8px;height:8px;border-radius:50%;flex:none}
+
+footer{padding:18px 32px;border-top:1px solid var(--line);font-size:11.5px;color:var(--dim);
+  letter-spacing:1px;display:flex;gap:20px;flex-wrap:wrap;position:relative;z-index:1}
+
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:rgba(120,180,255,.18);border-radius:5px}
+::-webkit-scrollbar-track{background:transparent}
+
+@media(max-width:860px){
+  header{padding:14px 18px;gap:12px}
+  .searchbox{margin-left:0;width:100%}
+  .searchbox input{width:100%}
+  .searchbox input:focus{width:100%}
+  #overview{padding:24px 18px}
+  .matrix{display:none}
+  .ov-grid{display:grid}
+  #domain{padding:18px 16px 60px}
+  .dhead{padding:20px}
+  .dhead h2{font-size:24px}
+  .dstats{gap:18px}
+  .crow{flex-wrap:wrap}
+  .crow .tags{justify-content:flex-start}
+}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="grid-overlay"></div>
+<div class="app">
+
+<header>
+  <div class="brand" onclick="goHome()">
+    <div class="mark"></div>
+    <h1>115 網路學系 學習地圖<small>NETWORK ACADEMY · COURSE MAP</small></h1>
+  </div>
+  <div class="searchbox">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#dce8ff" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input id="q" type="text" placeholder="搜尋課程名稱…" autocomplete="off">
+  </div>
+</header>
+
+<section id="overview" class="view active">
+  <div class="ov-title">
+    <div class="en">NETWORK ACADEMY · COURSE MAP</div>
+    <h2>七大領域 × 專業子分類</h2>
+    <div class="sub">Level 1 領域 — Level 2 專業子分類 全覽</div>
+  </div>
+  <div class="matrix" id="matrix"></div>
+  <div class="ov-grid" id="ovgrid"></div>
+  <div class="ov-hint"><span class="pulse"></span>點擊領域或子分類 進入課程地圖</div>
+</section>
+
+<section id="domain" class="view"></section>
+
+<div id="searchres"></div>
+
+<footer>
+  <span>資料來源：115網路學系_學習地圖_全課程列式整理.xlsx（16 張學習地圖 · 358 筆課程）</span>
+  <span>難度依原學習地圖「基礎／進階／專業」區塊位置判讀</span>
+</footer>
+</div>
+
+<script>
+const RAW = [{"page":4,"mapId":"1.1.1","L1":"固網","L2":"接取","L3":"規設人員","course":"FTTH ODN光纖網路 規劃設計(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"線路規劃設計","trainer":"院本部：李怡菁 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網規設處"},{"page":4,"mapId":"1.1.1","L1":"固網","L2":"接取","L3":"規設人員","course":"光進銅減分析訓練班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"線路規劃設計","trainer":"院本部：李怡菁 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網規設處"},{"page":4,"mapId":"1.1.1","L1":"固網","L2":"接取","L3":"規設人員","course":"線路規劃設計新進人員訓練班 (9天)","hours":"9天","level":"基礎","classType":"專案","feature":"—","subCat":"線路規劃設計","trainer":"院本部：李怡菁 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網規設處"},{"page":4,"mapId":"1.1.1","L1":"固網","L2":"接取","L3":"規設人員","course":"CEMIS-II工程案規劃與細部設計(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"資訊系統操作","trainer":"院本部：李怡菁 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網規設處"},{"page":4,"mapId":"1.1.1","L1":"固網","L2":"接取","L3":"規設人員","course":"電信土木管道規劃設計研習班(2天)","hours":"2天","level":"進階","classType":"計畫","feature":"—","subCat":"線路規劃設計","trainer":"院本部：李怡菁 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網規設處"},{"page":4,"mapId":"1.1.1","L1":"固網","L2":"接取","L3":"規設人員","course":"電信線路基本設計書規劃及編製(2天)","hours":"2天","level":"進階","classType":"專案","feature":"—","subCat":"線路規劃設計","trainer":"院本部：李怡菁 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網規設處"},{"page":4,"mapId":"1.1.1","L1":"固網","L2":"接取","L3":"規設人員","course":"CHTGIS 新一代介面暨圖資查詢與編輯作業班(3天)","hours":"3天","level":"進階","classType":"專案","feature":"—","subCat":"資訊系統操作","trainer":"院本部：李怡菁 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網規設處"},{"page":4,"mapId":"1.1.1","L1":"固網","L2":"接取","L3":"規設人員","course":"專案經驗研討 ex選舉罷免專案、路平專案、南港改接案(各0.5天)","hours":"0.5天","level":"專業","classType":"專案","feature":"—","subCat":"專案經驗研討","trainer":"院本部：李怡菁 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網規設處"},{"page":4,"mapId":"1.1.1","L1":"固網","L2":"接取","L3":"規設人員","course":"LEAMIS線路規劃設計班(1天) LEAMIS查訂線、芯線管制、預跳線管理","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"資訊系統操作","trainer":"院本部：李怡菁 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網規設處"},{"page":4,"mapId":"1.1.1","L1":"固網","L2":"接取","L3":"規設人員","course":"光世代寬頻接取網路技術概念(1天)","hours":"1天","level":"基礎","classType":"計畫","feature":"—","subCat":"跨域共課/基礎共通","trainer":"院本部：李怡菁 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網規設處"},{"page":4,"mapId":"1.1.1","L1":"固網","L2":"接取","L3":"規設人員","course":"寬頻彙集網路概述(0.5天)","hours":"0.5天","level":"基礎","classType":"計畫","feature":"—","subCat":"跨域共課/基礎共通","trainer":"院本部：李怡菁 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網規設處"},{"page":4,"mapId":"1.1.1","L1":"固網","L2":"接取","L3":"規設人員","course":"行固網路融合概述(1天)","hours":"1天","level":"基礎","classType":"計畫","feature":"—","subCat":"跨域共課/基礎共通","trainer":"院本部：李怡菁 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網規設處"},{"page":4,"mapId":"1.1.1","L1":"固網","L2":"接取","L3":"規設人員","course":"傳輸網路概述(0.5天)","hours":"0.5天","level":"基礎","classType":"計畫","feature":"—","subCat":"跨域共課/基礎共通","trainer":"院本部：李怡菁 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網規設處"},{"page":4,"mapId":"1.1.1","L1":"固網","L2":"接取","L3":"規設人員","course":"交換網路概述(0.5天)","hours":"0.5天","level":"基礎","classType":"計畫","feature":"—","subCat":"跨域共課/基礎共通","trainer":"院本部：李怡菁 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網規設處"},{"page":4,"mapId":"1.1.1","L1":"固網","L2":"接取","L3":"規設人員","course":"線路 細部設計PROGECAD實作班(1天)","hours":"1天","level":"進階","classType":"專案","feature":"本年新增課程","subCat":"製圖/細部設計","trainer":"院本部：李怡菁 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網規設處"},{"page":4,"mapId":"1.1.1","L1":"固網","L2":"接取","L3":"規設人員","course":"線規人員專業養成訓練班(2天)","hours":"2天","level":"基礎","classType":"專案","feature":"—","subCat":"線路規劃設計","trainer":"院本部：李怡菁 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網規設處"},{"page":4,"mapId":"1.1.1","L1":"固網","L2":"接取","L3":"規設人員","course":"MSAN大批改接作業流程研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"線路規劃設計","trainer":"院本部：李怡菁 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網規設處"},{"page":4,"mapId":"1.1.1","L1":"固網","L2":"接取","L3":"規設人員","course":"電信管理法與建築空間設計規範研習班(1天)","hours":"1天","level":"專業","classType":"專案","feature":"本年新增課程","subCat":"法律規範與風險預防","trainer":"院本部：李怡菁 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網規設處"},{"page":4,"mapId":"1.1.1","L1":"固網","L2":"接取","L3":"規設人員","course":"彈性工法及微創工法訓練班(1天)","hours":"1天","level":"進階","classType":"臨時","feature":"—","subCat":"線路規劃設計","trainer":"院本部：李怡菁 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網規設處"},{"page":4,"mapId":"1.1.1","L1":"固網","L2":"接取","L3":"規設人員","course":"線路規劃設計法律風險與實務研習班(1天)","hours":"1天","level":"專業","classType":"臨時","feature":"—","subCat":"法律規範與風險預防","trainer":"院本部：李怡菁 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網規設處"},{"page":4,"mapId":"1.1.1","L1":"固網","L2":"接取","L3":"規設人員","course":"海纜稀缺技術(0.2天)","hours":"0.2天","level":"基礎","classType":"專案","feature":"—","subCat":"跨域共課/基礎共通","trainer":"院本部：李怡菁 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網規設處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"纜線佈放作業承商訓練班(1天)","hours":"1天","level":"基礎","classType":"專案","feature":"—","subCat":"接取","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"MOD裝機承商訓練班(1天)","hours":"1天","level":"基礎","classType":"專案","feature":"—","subCat":"接取","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"FTTH裝機承商訓練班(2天)","hours":"2天","level":"基礎","classType":"專案","feature":"—","subCat":"接取","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"市話裝機承商訓練班(1天)","hours":"1天","level":"基礎","classType":"專案","feature":"—","subCat":"接取","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"寬頻裝機承商訓練班(2天)","hours":"2天","level":"基礎","classType":"專案","feature":"—","subCat":"接取","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"電信用戶設備品管員認證班(2天)","hours":"2天","level":"專業","classType":"專案","feature":"—","subCat":"纜線裝維","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"電信線路工程品管員認證班(2天)","hours":"2天","level":"專業","classType":"專案","feature":"—","subCat":"客戶端裝機","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"電信土木工程品管員認證班(2天)","hours":"2天","level":"專業","classType":"專案","feature":"—","subCat":"製圖資訊系統","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"CHTGIS路網圖資 建置承商訓練班(2天)","hours":"2天","level":"基礎","classType":"專案","feature":"—","subCat":"接取","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"BSPM客網查修操作實務班(2天)","hours":"2天","level":"專業","classType":"專案","feature":"—","subCat":"裝維資訊系統","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"Wi-Fi 查測與佈建優化實務班(1天)","hours":"1天","level":"專業","classType":"臨時","feature":"—","subCat":"xDSL/MOD","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"MOD障礙查測案例研習班(1天)","hours":"1天","level":"專業","classType":"計畫","feature":"—","subCat":"Wi-Fi/新技術","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"MOD裝機承商技能檢定班(1天)","hours":"1天","level":"進階","classType":"專案","feature":"—","subCat":"纜線裝維","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"市話裝機承商技能檢定班(1天)","hours":"1天","level":"進階","classType":"專案","feature":"—","subCat":"客戶端裝機","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"寬頻裝機承商技能檢定班(1天)","hours":"1天","level":"進階","classType":"專案","feature":"—","subCat":"客戶端裝機","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"FTTH裝機承商技能檢定班(1天)","hours":"1天","level":"進階","classType":"專案","feature":"—","subCat":"纜線裝維","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"光纜接續承商 訓練班(3天)","hours":"3天","level":"進階","classType":"專案","feature":"—","subCat":"製圖資訊系統","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"CHTGIS管理與圖資維運承商訓練班(3天)","hours":"3天","level":"進階","classType":"專案","feature":"—","subCat":"製圖資訊系統","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"客網新進人員訓練班(23天)","hours":"23天","level":"基礎","classType":"專案","feature":"—","subCat":"接取","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"客網裝機查修APP應用實務班(1天)","hours":"1天","level":"基礎","classType":"專案","feature":"—","subCat":"接取","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"低速數據專線與ISDN PRA 查修研習班 (1天)","hours":"1天","level":"進階","classType":"專案","feature":"—","subCat":"xDSL/MOD","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"LDM迴路寬頻診斷管理系統研習班 (1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"Wi-Fi/新技術","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"IPv6供裝及障礙查測實務班(1天)","hours":"1天","level":"基礎","classType":"計畫","feature":"—","subCat":"接取","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"家用Mesh AP裝查技術研習班(1天)","hours":"1天","level":"基礎","classType":"計畫","feature":"—","subCat":"接取","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"公眾Wi-Fi裝查技術與實務應用班(1天)","hours":"1天","level":"基礎","classType":"計畫","feature":"—","subCat":"接取","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"寬頻網路用戶端新技術研習班(1天)","hours":"1天","level":"進階","classType":"專案","feature":"—","subCat":"Wi-Fi/新技術","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"ITA裝查訓練班(1天)","hours":"1天","level":"進階","classType":"專案","feature":"—","subCat":"xDSL/MOD","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"測量台SVG預跳作業暨BTOS系統維運訓練班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"Wi-Fi/新技術","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"CPE AI劣化診斷應用研習班","hours":"未標示","level":"進階","classType":"專案","feature":"本年新增課程","subCat":"Wi-Fi/新技術","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"寬頻查修AI助理應用研習班((1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"Wi-Fi/新技術","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"宏華國際客網隊長 培訓班 (4天)","hours":"4天","level":"進階","classType":"專案","feature":"—","subCat":"xDSL/MOD","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"公職人員選舉計票網路加密器裝機維運訓練班(0.5天)","hours":"0.5天","level":"基礎","classType":"專案","feature":"—","subCat":"接取","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":5,"mapId":"1.1.2-1","L1":"固網","L2":"接取","L3":"客網人員","course":"公職人員選舉計票網路駐點維運訓練班(1天)","hours":"1天","level":"基礎","classType":"專案","feature":"—","subCat":"接取","trainer":"院本部：張伸吉 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"纜線維護新進人員訓練班(18天)","hours":"18天","level":"基礎","classType":"專案","feature":"—","subCat":"接取","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"電纜充氣維護基礎班(2天)","hours":"2天","level":"基礎","classType":"專案","feature":"—","subCat":"接取","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"電纜充氣維護施工實務班(2天)","hours":"2天","level":"進階","classType":"專案","feature":"—","subCat":"電纜/充氣維運","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"光纜線路基礎班(3天)","hours":"3天","level":"基礎","classType":"專案","feature":"—","subCat":"接取","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"光纜線路測試儀器操作實務班(2天)","hours":"2天","level":"進階","classType":"專案","feature":"—","subCat":"光纜維運","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"熔接機與OTDR 維修班(2天)","hours":"2天","level":"進階","classType":"專案","feature":"—","subCat":"ODN設計","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"全波段卷束式光纜設計及施工研習班(1天)","hours":"1天","level":"進階","classType":"專案","feature":"—","subCat":"ODN設計","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"OCAMS光纜監測系統研習班(1天)","hours":"1天","level":"專業","classType":"專案","feature":"—","subCat":"光纜維運","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"光纖寬頻接取迴路診斷系統(LDM_F)研習班(1天)(全E)","hours":"1天；全E","level":"專業","classType":"專案","feature":"數位課程","subCat":"光纜維運","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"FTTH ODN規劃設計研習班(1天)","hours":"1天","level":"專業","classType":"專案","feature":"—","subCat":"ODN設計","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"FTTH(XPON)技術 研習班(1天)","hours":"1天","level":"專業","classType":"專案","feature":"—","subCat":"ODN設計","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"FTTH ODN光纖網路規劃設計基礎班(1天)","hours":"1天","level":"進階","classType":"專案","feature":"—","subCat":"光纜維運","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"CHTGIS 新一代介面暨圖資作業班(3天)","hours":"3天","level":"專業","classType":"專案","feature":"—","subCat":"電纜/充氣維運","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"MSAN大批改接作業流程研習班(1天)","hours":"1天","level":"進階","classType":"專案","feature":"—","subCat":"光纜維運","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"CEMIS-II施工管理作業實務班(2天)","hours":"2天","level":"專業","classType":"專案","feature":"—","subCat":"土木發包","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"CEMIS-II請款驗收結決算作業實務班(1天)","hours":"1天","level":"專業","classType":"專案","feature":"—","subCat":"土木發包","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"客網發包工程之法律概念與案例分享班(3 HR)","hours":"3 HR","level":"基礎","classType":"專案","feature":"—","subCat":"接取","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"土木發包工程檢查員品質檢查作業實務班(2天)","hours":"2天","level":"進階","classType":"專案","feature":"—","subCat":"土木發包","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"線路發包工程檢查員品質檢查作業實務班(2天)","hours":"2天","level":"進階","classType":"專案","feature":"—","subCat":"線路發包","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"丙級測量技術士考照輔導班(1天)","hours":"1天","level":"進階","classType":"專案","feature":"—","subCat":"土木發包","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"裝移機發包工程檢查員品質檢查作業實務班(1天)","hours":"1天","level":"進階","classType":"專案","feature":"—","subCat":"裝移機發包","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"光進銅減分析訓練班(1天)","hours":"1天","level":"進階","classType":"專案","feature":"—","subCat":"電纜/充氣維運","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"立桿及架空纜線訓練班((1天)","hours":"1天","level":"基礎","classType":"專案","feature":"—","subCat":"接取","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"線路土木基礎班((1天)","hours":"1天","level":"基礎","classType":"專案","feature":"—","subCat":"接取","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":6,"mapId":"1.1.2-2","L1":"固網","L2":"接取","L3":"客網人員","course":"人手孔抗滑墊施工及量測技術班(1天)","hours":"1天","level":"專業","classType":"專案","feature":"—","subCat":"電纜/充氣維運","trainer":"院本部：林威名 臺中所：陳育澍、許正旺 高雄所：黃志祥","contact":"網分固客網處"},{"page":7,"mapId":"1.2","L1":"固網","L2":"單一彙集","L3":"通用/未標示","course":"網路技術與應用實務-深入探索 (4小時)(數位教材)","hours":"4小時","level":"基礎","classType":"專案","feature":"數位課程","subCat":"單一彙集","trainer":"院本部：高鍵峯 臺中所：林東養 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":7,"mapId":"1.2","L1":"固網","L2":"單一彙集","L3":"通用/未標示","course":"網路技術與應用實務-建立觀念 (2小時)(數位教材)","hours":"2小時","level":"基礎","classType":"專案","feature":"數位課程","subCat":"單一彙集","trainer":"院本部：高鍵峯 臺中所：林東養 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":7,"mapId":"1.2","L1":"固網","L2":"單一彙集","L3":"通用/未標示","course":"MPLS VPN應用實務 (3小時)(數位教材)","hours":"3小時","level":"基礎","classType":"專案","feature":"數位課程","subCat":"單一彙集","trainer":"院本部：高鍵峯 臺中所：林東養 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":7,"mapId":"1.2","L1":"固網","L2":"單一彙集","L3":"通用/未標示","course":"寬頻網路架構概述(1小時) (數位教材 / 全e課程)","hours":"1小時；全e","level":"基礎","classType":"專案","feature":"數位課程","subCat":"單一彙集","trainer":"院本部：高鍵峯 臺中所：林東養 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":7,"mapId":"1.2","L1":"固網","L2":"單一彙集","L3":"通用/未標示","course":"寬頻服務及網路 架構概念班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"IP網路技術 / 寬頻網路架構","trainer":"院本部：高鍵峯 臺中所：林東養 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":7,"mapId":"1.2","L1":"固網","L2":"單一彙集","L3":"通用/未標示","course":"寬頻設備整合維運 技術研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"行固融合 / MSER 維運技術","trainer":"院本部：高鍵峯 臺中所：林東養 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":7,"mapId":"1.2","L1":"固網","L2":"單一彙集","L3":"通用/未標示","course":"行固融合單一承載網 維運技術研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"行固融合 / MSER 維運技術","trainer":"院本部：高鍵峯 臺中所：林東養 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":7,"mapId":"1.2","L1":"固網","L2":"單一彙集","L3":"通用/未標示","course":"寬頻維運基礎學程認證訓練班(3天) + 寬頻維運基礎學程認證測試班(1天)","hours":"3天；1天","level":"專業","classType":"計畫","feature":"—","subCat":"行固融合 / MSER 維運技術","trainer":"院本部：高鍵峯 臺中所：林東養 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":7,"mapId":"1.2","L1":"固網","L2":"單一彙集","L3":"通用/未標示","course":"重要網路網管系統功能說明與 障礙查測應用研習班(1天)","hours":"1天","level":"進階","classType":"專案","feature":"本年新增課程","subCat":"寬頻網路維運 / 營維協作","trainer":"院本部：高鍵峯 臺中所：林東養 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":7,"mapId":"1.2","L1":"固網","L2":"單一彙集","L3":"通用/未標示","course":"電信網路維運零錯誤思維研習班 (1天)","hours":"1天","level":"進階","classType":"專案","feature":"本年新增課程","subCat":"寬頻網路維運 / 營維協作","trainer":"院本部：高鍵峯 臺中所：林東養 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":7,"mapId":"1.2","L1":"固網","L2":"單一彙集","L3":"通用/未標示","course":"AI導向自治網路與人工智慧 技術概念班(1天)","hours":"1天","level":"基礎","classType":"計畫","feature":"—","subCat":"單一彙集","trainer":"院本部：高鍵峯 臺中所：林東養 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":7,"mapId":"1.2","L1":"固網","L2":"單一彙集","L3":"通用/未標示","course":"AI導向自治網路、數位分身 暨智慧維運研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"自治網路 / 數位分身","trainer":"院本部：高鍵峯 臺中所：林東養 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":7,"mapId":"1.2","L1":"固網","L2":"單一彙集","L3":"通用/未標示","course":"114年光世代寬頻彙集網路MSER設備(A群)建設案教育訓練(2天)","hours":"2天","level":"基礎","classType":"臨時","feature":"—","subCat":"單一彙集","trainer":"院本部：高鍵峯 臺中所：林東養 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":7,"mapId":"1.2","L1":"固網","L2":"單一彙集","L3":"通用/未標示","course":"114年行動寬頻彙集網路MSER設備(B群)建設案教育訓練(2天)","hours":"2天","level":"基礎","classType":"臨時","feature":"—","subCat":"單一彙集","trainer":"院本部：高鍵峯 臺中所：林東養 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":7,"mapId":"1.2","L1":"固網","L2":"單一彙集","L3":"通用/未標示","course":"114年光世代寬頻彙集網路MSER設備(B群)建設案教育訓練(2天)","hours":"2天","level":"基礎","classType":"臨時","feature":"—","subCat":"單一彙集","trainer":"院本部：高鍵峯 臺中所：林東養 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":7,"mapId":"1.2","L1":"固網","L2":"單一彙集","L3":"通用/未標示","course":"114年行動寬頻彙集網路MSER設備(A群)建設案教育訓練(2天)","hours":"2天","level":"基礎","classType":"臨時","feature":"—","subCat":"單一彙集","trainer":"院本部：高鍵峯 臺中所：林東養 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":7,"mapId":"1.2","L1":"固網","L2":"單一彙集","L3":"通用/未標示","course":"TMOS訊務數位分身模擬操作研習班(3小時)","hours":"3小時","level":"專業","classType":"臨時","feature":"—","subCat":"自治網路 / 數位分身","trainer":"院本部：高鍵峯 臺中所：林東養 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":7,"mapId":"1.2","L1":"固網","L2":"單一彙集","L3":"通用/未標示","course":"AI導向自治網路與人工智慧 技術概述(7小時)(數位教材)","hours":"7小時","level":"基礎","classType":"專案","feature":"數位課程","subCat":"單一彙集","trainer":"院本部：高鍵峯 臺中所：林東養 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":7,"mapId":"1.2","L1":"固網","L2":"單一彙集","L3":"通用/未標示","course":"固網寬頻AI智慧維運助理 應用研習班(3小時)","hours":"3小時","level":"基礎","classType":"專案","feature":"—","subCat":"單一彙集","trainer":"院本部：高鍵峯 臺中所：林東養 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":7,"mapId":"1.2","L1":"固網","L2":"單一彙集","L3":"通用/未標示","course":"AI原理與電信網路維運 應用研習班(3小時)","hours":"3小時","level":"基礎","classType":"專案","feature":"—","subCat":"單一彙集","trainer":"院本部：高鍵峯 臺中所：林東養 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"MSAN設備及維運技術概述 (1小時)(數位教材 / 全e課程)","hours":"1小時；全e","level":"基礎","classType":"專案","feature":"數位課程","subCat":"核心","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"UC雲端總機進階教育訓練 (1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"固網語音 / 加值服務","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"SVG ISDN PRA信令分析及 警消查址系統研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"SVG / MSAN 維運技術","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"交換維運基礎學程認證訓練班(4天) + 交換維運基礎學程認證測試班(1天)","hours":"4天；1天","level":"專業","classType":"計畫","feature":"—","subCat":"IMS核網架構 / 維運技術","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"NGN核心網路架構及FMNP/ ENUM局情解析研習班(1天)","hours":"1天","level":"進階","classType":"專案","feature":"本年新增課程","subCat":"IMS核網架構 / 維運技術","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"電信網路維運零錯誤思維研習班(1天)","hours":"1天","level":"進階","classType":"專案","feature":"本年新增課程","subCat":"IMS核網架構 / 維運技術","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"NGN IMS呼叫流程解析與 障礙案例分享研習班班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"訊務分析 / 營維協作","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"TMOS訊務數位分身 模擬操作研習班(3小時)","hours":"3小時","level":"專業","classType":"臨時","feature":"—","subCat":"訊務分析 / 營維協作","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"114年度彙集網IMS Core設備汰換建設案教育訓練(1天)","hours":"1天","level":"基礎","classType":"臨時","feature":"—","subCat":"核心","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"IP PBX與IP Centrex 服務應用簡介(1小時) (數位教材)","hours":"1小時","level":"基礎","classType":"專案","feature":"數位課程","subCat":"核心","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"公眾交換電話網路(PSTN)概述(2小時)(數位教材)","hours":"2小時","level":"基礎","classType":"專案","feature":"數位課程","subCat":"核心","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"SVG設備及維運技術概述(1小時) (數位教材 / 全e課程)","hours":"1小時；全e","level":"基礎","classType":"專案","feature":"數位課程","subCat":"核心","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"固網加值服務概述(2小時) (數位教材 / 全e課程)","hours":"2小時；全e","level":"基礎","classType":"專案","feature":"數位課程","subCat":"核心","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"電信語音網路轉型發展概述 (2小時)(數位教材 / 全e課程)","hours":"2小時；全e","level":"基礎","classType":"專案","feature":"數位課程","subCat":"核心","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"NGN新世代網路概述(1小時) (數位教材 / 全e課程)","hours":"1小時；全e","level":"基礎","classType":"專案","feature":"數位課程","subCat":"核心","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"SVG、MSAN維運技術及 障礙案例分享研習班(1天)","hours":"1天","level":"進階","classType":"專案","feature":"本年新增課程","subCat":"SVG / MSAN 維運技術","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"NGN Browser 結合生成式 AI 與DPI訊務解析研習班(2天)","hours":"2天","level":"進階","classType":"專案","feature":"本年新增課程","subCat":"訊務分析 / 營維協作","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"NGN12-雲化網元介紹 (2小時) (數位教材)","hours":"2小時","level":"基礎","classType":"專案","feature":"數位課程","subCat":"核心","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"MSAN eRAM改接流程規設 起案說明 (1小時) (數位教材)","hours":"1小時","level":"基礎","classType":"專案","feature":"數位課程","subCat":"核心","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"語音信令分析與網路韌性 強化技術(5小時) (數位教材)","hours":"5小時","level":"基礎","classType":"專案","feature":"數位課程","subCat":"核心","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"固網加值(智慧型網路)及電信號碼資源概述(3小時) (數位教材)","hours":"3小時","level":"進階","classType":"專案","feature":"數位課程","subCat":"固網語音 / 加值服務","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"NGN Browser實例說明 (2小時) (數位教材)","hours":"2小時","level":"基礎","classType":"專案","feature":"數位課程","subCat":"核心","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"長途及彙接交換機互連架構及汰停規劃(3小時) (數位教材)","hours":"3小時","level":"基礎","classType":"專案","feature":"數位課程","subCat":"核心","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":8,"mapId":"1.3","L1":"固網","L2":"核心","L3":"通用/未標示","course":"SIP簡介 (2小時) (數位教材)","hours":"2小時","level":"基礎","classType":"專案","feature":"數位課程","subCat":"核心","trainer":"院本部：高鍵峯 臺中所：許俊木 高雄所：蘇亮妃","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":9,"mapId":"1.3-2","L1":"固網","L2":"核心","L3":"通用/未標示","course":"Nokia OTN網路維運經驗分享與技術傳承研習班(2天)","hours":"2天","level":"進階","classType":"專案","feature":"本年新增課程","subCat":"OTN維運技術","trainer":"院本部：蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":9,"mapId":"1.3-2","L1":"固網","L2":"核心","L3":"通用/未標示","course":"OTN(Nokia)網路維運學程認證(5天)","hours":"5天","level":"專業","classType":"專案","feature":"—","subCat":"OTN維運技術","trainer":"院本部：蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":9,"mapId":"1.3-2","L1":"固網","L2":"核心","L3":"通用/未標示","course":"光化交接箱維運技術研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"寬頻接取技術","trainer":"院本部：蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":9,"mapId":"1.3-2","L1":"固網","L2":"核心","L3":"通用/未標示","course":"DASAN 10G AGG-E購案教育訓練班(1天)","hours":"1天","level":"進階","classType":"臨時","feature":"—","subCat":"寬頻接取技術","trainer":"院本部：蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":9,"mapId":"1.3-2","L1":"固網","L2":"核心","L3":"通用/未標示","course":"OPNETOE1-Mux供裝測試研習班 (1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"PTN 維運技術","trainer":"院本部：蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":9,"mapId":"1.3-2","L1":"固網","L2":"核心","L3":"通用/未標示","course":"RINOS光世代網管系統研習班 (1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"光世代網管系統","trainer":"院本部：蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":9,"mapId":"1.3-2","L1":"固網","L2":"核心","L3":"通用/未標示","course":"Infinera OTN網路維運經驗分享與技術傳承研習班(2天)","hours":"2天","level":"進階","classType":"專案","feature":"本年新增課程","subCat":"OTN維運技術","trainer":"院本部：蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":9,"mapId":"1.3-2","L1":"固網","L2":"核心","L3":"通用/未標示","course":"OTN(Coriant)網路維運學程認證(5天)","hours":"5天","level":"專業","classType":"專案","feature":"—","subCat":"OTN維運技術","trainer":"院本部：蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":9,"mapId":"1.3-2","L1":"固網","L2":"核心","L3":"通用/未標示","course":"PTN(Coriant)網路維運學程認證(5天)","hours":"5天","level":"專業","classType":"專案","feature":"—","subCat":"PTN 維運技術","trainer":"院本部：蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":9,"mapId":"1.3-2","L1":"固網","L2":"核心","L3":"通用/未標示","course":"PAMS有關電路緊急調訂作業及因應作為研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"光世代網管系統","trainer":"院本部：蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":9,"mapId":"1.3-2","L1":"固網","L2":"核心","L3":"通用/未標示","course":"光世代寬頻接取網路維運學程(5天)","hours":"5天","level":"專業","classType":"專案","feature":"—","subCat":"寬頻接取技術","trainer":"院本部：蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":9,"mapId":"1.3-2","L1":"固網","L2":"核心","L3":"通用/未標示","course":"NG PON 技術研習班(1天)","hours":"1天","level":"進階","classType":"專案","feature":"—","subCat":"PTN 維運技術","trainer":"院本部：蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"網分固網通信規設處 網分固網維運處 網分網路監控管理處 網分營維協作系統處"},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"5G網路研習班(1天)","hours":"1天","level":"基礎","classType":"計畫","feature":"—","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"5G無線網路 技術研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"5G傳送網路 技術研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"5G核心網路 技術研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"無線通信技術 基礎班(1天)","hours":"1天","level":"基礎","classType":"計畫","feature":"—","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"5G企業專網 研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"5G企業專網工程 規劃實務班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"Ericsson 5G基地台 設備操作維護班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"Nokia 5G基地台 設備操作維護班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"5G無線網路維運 優化研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"Ericsson ENM RAN 網路維運實務班 (1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"Nokia網管與基地台 參數調整操作研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"O-RAN技術 研習班(2天)","hours":"2天","level":"進階","classType":"計畫","feature":"—","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"O-RAN網路管理 技術研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"Ericsson 5G 基地台 裝機設定學程認證(5天)","hours":"5天","level":"專業","classType":"計畫","feature":"—","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"行動基地台天線系統 量測實務班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"B5G、6G技術發展(0.5天)","hours":"0.5天","level":"專業","classType":"專案","feature":"本年新增課程","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"5G網路概要(6小時)","hours":"6小時","level":"基礎","classType":"專案","feature":"—","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"B5G、6G技術與應用發展趨勢(2小時)","hours":"2小時","level":"專業","classType":"專案","feature":"—","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"5G網路架構功能 及運作流程(6小時)","hours":"6小時","level":"進階","classType":"專案","feature":"—","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"非地面NTN網路 技術應用(3小時)","hours":"3小時","level":"專業","classType":"專案","feature":"—","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"行固共維C-RAN 機房維護(5小時)","hours":"5小時","level":"進階","classType":"專案","feature":"—","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":10,"mapId":"2","L1":"行網","L2":"行網","L3":"通用/未標示","course":"中華電信四大網路基礎概念(2小時)","hours":"2小時","level":"基礎","classType":"專案","feature":"—","subCat":"行網","trainer":"院本部：吳兆哲、曾家偉 台中所：吳川福 高雄所：蕭建財","contact":null},{"page":11,"mapId":"3","L1":"衛星","L2":"衛星","L3":"規設人員","course":"選擇「軌道＋頻段＋服務模式」 (0.5天)","hours":"0.5天","level":"基礎","classType":"計畫","feature":"—","subCat":"傳輸技術與設備選型 （車載、船載、固定）","trainer":"院本部：曾家偉，蕭毅","contact":"網分衛星處與行產處"},{"page":11,"mapId":"3","L1":"衛星","L2":"衛星","L3":"規設人員","course":"端到端網路 / 系統架構設計(0.5天)","hours":"0.5天","level":"進階","classType":"計畫","feature":"—","subCat":"多軌衛星整合 （LEO + GEO 混合架構）","trainer":"院本部：曾家偉，蕭毅","contact":"網分衛星處與行產處"},{"page":11,"mapId":"3","L1":"衛星","L2":"衛星","L3":"規設人員","course":"國家級 / 大型專案規劃、標案設計(1天)","hours":"1天","level":"專業","classType":"計畫","feature":"—","subCat":"多軌衛星整合 （LEO + GEO 混合架構）","trainer":"院本部：曾家偉，蕭毅","contact":"網分衛星處與行產處"},{"page":11,"mapId":"3","L1":"衛星","L2":"衛星","L3":"維運人員","course":"基本站台啟用與操作(1天)","hours":"1天","level":"基礎","classType":"計畫","feature":"—","subCat":"天線追蹤（Step Track、自動追星）","trainer":"院本部：曾家偉，蕭毅","contact":"網分衛星處與行產處"},{"page":11,"mapId":"3","L1":"衛星","L2":"衛星","L3":"維運人員","course":"系統調校與效能最佳化(0.5天)","hours":"0.5天","level":"進階","classType":"計畫","feature":"—","subCat":"災害應變與備援啟動（衛星備援網路）","trainer":"院本部：曾家偉，蕭毅","contact":"網分衛星處與行產處"},{"page":11,"mapId":"3","L1":"衛星","L2":"衛星","L3":"維運人員","course":"複雜故障排除＋7x24 可靠維運(1天)","hours":"1天","level":"專業","classType":"計畫","feature":"—","subCat":"故障排除與環境維護","trainer":"院本部：曾家偉，蕭毅","contact":"網分衛星處與行產處"},{"page":12,"mapId":"4","L1":"海纜","L2":"海纜","L3":"規設人員","course":"海纜容量與技術演進(1HRs) Optical capacity、SDM、Open Cable、C+L Band 頻寬擴展","hours":"1HR","level":"專業","classType":"專案","feature":"—","subCat":"海纜","trainer":"院本部：蕭毅，曾家偉","contact":"網分國維處"},{"page":12,"mapId":"4","L1":"海纜","L2":"海纜","L3":"規設人員","course":"供電與系統設計(2HRs) PFE 供電架構（SEF/DEF）、高壓供電與壓降計算、供電系統分割與可靠度設計","hours":"2HR","level":"專業","classType":"專案","feature":"—","subCat":"海纜","trainer":"院本部：蕭毅，曾家偉","contact":"網分國維處"},{"page":12,"mapId":"4","L1":"海纜","L2":"海纜","L3":"規設人員","course":"投資與專案管理(1HRs) 建設組織（MC/PG/TWG）、採購流程（評標/BAFO/合約）、專案生命周期（設計→施工→驗收）","hours":"1HR","level":"專業","classType":"專案","feature":"—","subCat":"海纜","trainer":"院本部：蕭毅，曾家偉","contact":"網分國維處"},{"page":12,"mapId":"4","L1":"海纜","L2":"海纜","L3":"規設人員","course":"系統設計與投資模式(2HRs) OTT 主導投資模式（合建/獨資）、Ring vs Fishbone 拓樸設計與保護、海纜長度分類與系統設計要求","hours":"2HR","level":"進階","classType":"專案","feature":"—","subCat":"海纜","trainer":"院本部：蕭毅，曾家偉","contact":"網分國維處"},{"page":12,"mapId":"4","L1":"海纜","L2":"海纜","L3":"規設人員","course":"路由與海事工程規劃(2HRs) 登陸點評估（地形/距離/土地/成本）、海床勘測（聲納/磁力儀/地質）、路由查勘與障礙避讓、海纜交叉與管線避讓","hours":"2HR","level":"進階","classType":"專案","feature":"—","subCat":"海纜","trainer":"院本部：蕭毅，曾家偉","contact":"網分國維處"},{"page":12,"mapId":"4","L1":"海纜","L2":"海纜","L3":"規設人員","course":"建設與施工規劃(2HRs) 掃海作業（PLGR、Route Clearance）、佈放（DSEL/PLSE）、埋設（犁埋/ROV噴埋）、保護設計（鎧裝/埋深）","hours":"2HR","level":"進階","classType":"專案","feature":"—","subCat":"海纜","trainer":"院本部：蕭毅，曾家偉","contact":"網分國維處"},{"page":12,"mapId":"4","L1":"海纜","L2":"海纜","L3":"規設人員","course":"整體規劃與策略 (2HRs) 國際通信架構（海纜/衛星/陸纜）比較、全球發展趨勢與頻寬需求成長、台灣海纜樞紐地位與區域布局策略","hours":"2HR","level":"基礎","classType":"專案","feature":"—","subCat":"海纜","trainer":"院本部：蕭毅，曾家偉","contact":"網分國維處"},{"page":12,"mapId":"4","L1":"海纜","L2":"海纜","L3":"規設人員","course":"海纜系統架構設計 (2HRs) 海纜組成（SLTE、PFE、中繼器、BU）、光傳輸架構（WDM、DWDM、Repeater）","hours":"2HR","level":"基礎","classType":"專案","feature":"—","subCat":"海纜","trainer":"院本部：蕭毅，曾家偉","contact":"網分國維處"},{"page":12,"mapId":"4","L1":"海纜","L2":"海纜","L3":"維運人員","course":"故障分析與定位 (2HRs) 故障類型（人為/自然/設備）、OTDR 與 PFE 定位、高故障區與季節性分析","hours":"2HR","level":"專業","classType":"專案","feature":"—","subCat":"海纜","trainer":"院本部：蕭毅，曾家偉","contact":"網分國維處"},{"page":12,"mapId":"4","L1":"海纜","L2":"海纜","L3":"維運人員","course":"搶修與作業流程 (2HRs) 搶修流程（通報→定位→修復）、海纜船作業（打撈/接續/下海）、維修組織（SEAIOCMA 協作）","hours":"2HR","level":"專業","classType":"專案","feature":"—","subCat":"海纜","trainer":"院本部：蕭毅，曾家偉","contact":"網分國維處"},{"page":12,"mapId":"4","L1":"海纜","L2":"海纜","L3":"維運人員","course":"保護、風控與資料管理(2HRs) 漁撈/地震風險、Guard wire/改路由/深埋、近岸保護、EMS/RFTE 與全球海纜監控平台","hours":"2HR","level":"專業","classType":"專案","feature":"—","subCat":"海纜","trainer":"院本部：蕭毅，曾家偉","contact":"網分國維處"},{"page":12,"mapId":"4","L1":"海纜","L2":"海纜","L3":"維運人員","course":"電路開通與調度 (2HRs) CAR/CAA 開通流程、NA Portal 電路指派、測試流程（Test Report）、跨營運商協調開通","hours":"2HR","level":"進階","classType":"專案","feature":"—","subCat":"海纜","trainer":"院本部：蕭毅，曾家偉","contact":"網分國維處"},{"page":12,"mapId":"4","L1":"海纜","L2":"海纜","L3":"維運人員","course":"海纜維運作業 (2HRs) 電路開通/關閉/測試、電路支援與備援路由、PBR（私有雙邊備援）概念","hours":"2HR","level":"進階","classType":"專案","feature":"—","subCat":"海纜","trainer":"院本部：蕭毅，曾家偉","contact":"網分國維處"},{"page":12,"mapId":"4","L1":"海纜","L2":"海纜","L3":"維運人員","course":"海纜系統維運基礎 (2HRs) 日常監控（電流、電壓、溫度）、告警與事件監測、維運角色（NOC、NA）","hours":"2HR","level":"基礎","classType":"專案","feature":"—","subCat":"海纜","trainer":"院本部：蕭毅，曾家偉","contact":"網分國維處"},{"page":13,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"AI邊緣運算實作研習班 (1天)","hours":"1天","level":"專業","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 邊緣運算：李克駿 無人機：蕭毅 許逸寧 新興科技：李克駿 楊棣華 陳品全","contact":null},{"page":13,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"適用於預測性維護的人工智慧應用(1天)","hours":"1天","level":"專業","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 邊緣運算：李克駿 無人機：蕭毅 許逸寧 新興科技：李克駿 楊棣華 陳品全","contact":null},{"page":13,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"DLI認證- NVIDIA Jetson Nano從理論到實踐研習班(3天)","hours":"3天","level":"進階","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 邊緣運算：李克駿 無人機：蕭毅 許逸寧 新興科技：李克駿 楊棣華 陳品全","contact":null},{"page":13,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"物聯網安全探索：韌體分析、漏洞檢測、威脅防範(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 邊緣運算：李克駿 無人機：蕭毅 許逸寧 新興科技：李克駿 楊棣華 陳品全","contact":null},{"page":13,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"智慧城市運籌管理研習班 /全e(3hrs)","hours":"全e；3hr","level":"進階","classType":"計畫","feature":"數位課程","subCat":"EdgeAI","trainer":"(院本部) 邊緣運算：李克駿 無人機：蕭毅 許逸寧 新興科技：李克駿 楊棣華 陳品全","contact":null},{"page":13,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"智慧物聯網(AIoT)關鍵技術及應用趨勢(3hr)","hours":"3hr","level":"基礎","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 邊緣運算：李克駿 無人機：蕭毅 許逸寧 新興科技：李克駿 楊棣華 陳品全","contact":null},{"page":13,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"DLI認證-NVIDIA Jetson Nano深度學習影像串流(2天)","hours":"2天","level":"專業","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 邊緣運算：李克駿 無人機：蕭毅 許逸寧 新興科技：李克駿 楊棣華 陳品全","contact":null},{"page":13,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"AI Agent 核心原理與 NVIDIA NemoClaw 運作解析(0.5天)","hours":"0.5天","level":"基礎","classType":"臨時","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 邊緣運算：李克駿 無人機：蕭毅 許逸寧 新興科技：李克駿 楊棣華 陳品全","contact":null},{"page":13,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"元宇宙 XR 開發課程 -Unity Engine(2天)","hours":"2天","level":"專業","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 邊緣運算：李克駿 無人機：蕭毅 許逸寧 新興科技：李克駿 楊棣華 陳品全","contact":null},{"page":13,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"NVIDIA Omniverse實作基礎課程(2天)","hours":"2天","level":"進階","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 邊緣運算：李克駿 無人機：蕭毅 許逸寧 新興科技：李克駿 楊棣華 陳品全","contact":null},{"page":13,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"Matter 智慧物聯網：Wi-Fi 7 AP 邊緣端設備通訊整合班(1天)","hours":"1天","level":"專業","classType":"臨時","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 邊緣運算：李克駿 無人機：蕭毅 許逸寧 新興科技：李克駿 楊棣華 陳品全","contact":null},{"page":13,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"Matter 智慧物聯網：Wi-Fi 6 AP 輕量化容器編譯與部署(1天)","hours":"1天","level":"專業","classType":"臨時","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 邊緣運算：李克駿 無人機：蕭毅 許逸寧 新興科技：李克駿 楊棣華 陳品全","contact":null},{"page":13,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"無人機智慧巡檢 (1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 邊緣運算：李克駿 無人機：蕭毅 許逸寧 新興科技：李克駿 楊棣華 陳品全","contact":null},{"page":13,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"無人機操控證照專業基本級研習班(2天)","hours":"2天","level":"專業","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 邊緣運算：李克駿 無人機：蕭毅 許逸寧 新興科技：李克駿 楊棣華 陳品全","contact":null},{"page":13,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"無人機空拍應用 (1天)","hours":"1天","level":"基礎","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 邊緣運算：李克駿 無人機：蕭毅 許逸寧 新興科技：李克駿 楊棣華 陳品全","contact":null},{"page":13,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"無人機3D建模應用 (1天)","hours":"1天","level":"進階","classType":"專案","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 邊緣運算：李克駿 無人機：蕭毅 許逸寧 新興科技：李克駿 楊棣華 陳品全","contact":null},{"page":13,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"無人機操控證照專業 高級研習班(2天)","hours":"2天","level":"專業","classType":"專案","feature":"本年新增課程","subCat":"EdgeAI","trainer":"(院本部) 邊緣運算：李克駿 無人機：蕭毅 許逸寧 新興科技：李克駿 楊棣華 陳品全","contact":null},{"page":13,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"無人機操控證照學科 (1天)","hours":"1天","level":"基礎","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 邊緣運算：李克駿 無人機：蕭毅 許逸寧 新興科技：李克駿 楊棣華 陳品全","contact":null},{"page":13,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"無人機森林碳匯 應用研習班(1天)","hours":"1天","level":"進階","classType":"專案","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 邊緣運算：李克駿 無人機：蕭毅 許逸寧 新興科技：李克駿 楊棣華 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"智慧製造與機器人實作班(樹莓派)(2天)","hours":"2天","level":"專業","classType":"計畫","feature":"—","subCat":"智慧醫療","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"自動光學檢測AOI及AI之工業應用實務基礎 (2天)","hours":"2天","level":"進階","classType":"計畫","feature":"—","subCat":"智慧醫療","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"車載通訊網路研習班 (1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"iEN智慧 水資源管理(3hr)","hours":"3hr","level":"進階","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"智慧醫療研習班 (1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"智慧醫療","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"智慧城市運籌管理研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"醫學資訊管理概論(2hrs)","hours":"2hr","level":"基礎","classType":"臨時","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"IoV車聯網專題系列直播(4hr)","hours":"4hr","level":"基礎","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"智慧製造產線實習與應用(數位孿生) (3hr)","hours":"3hr","level":"基礎","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"智慧交通應用研習班 (1天)","hours":"1天","level":"基礎","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"GEMS電力商務 平台 (1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"電動車與充電樁研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"工業控制安全防護 (1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"自動光學檢測AOI及AI之工業應用實務/進階(4天)","hours":"4天","level":"專業","classType":"計畫","feature":"—","subCat":"智慧醫療","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"智慧安防導論與應用分享(全e)(1hr)","hours":"全e；1hr","level":"基礎","classType":"專案","feature":"數位課程","subCat":"EdgeAI","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"智慧安防應用研習班 (1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"智慧醫療","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"智慧場域資安風險與防護對策(以工控與醫療為例)(1天)","hours":"1天","level":"基礎","classType":"計畫","feature":"本年新增課程","subCat":"EdgeAI","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"Jamf 200裝置管理認證班","hours":"未標示","level":"專業","classType":"臨時","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"車聯網技術與應用研習班 (1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"ISO 24089 車聯網軟體安全更新工程培訓 (3天)","hours":"3天","level":"專業","classType":"專案","feature":"—","subCat":"智慧醫療","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"別讓駭客開你的車! 車聯網資安標準探討 (直播)(4hr)","hours":"4hr","level":"基礎","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"智慧醫療領域專家 基礎學程認證(3天)","hours":"3天","level":"專業","classType":"專案","feature":"—","subCat":"智慧醫療","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"AI代理驅動健康醫療發展研習班(2hrs)","hours":"2hr","level":"基礎","classType":"臨時","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"智能醫療應用流程面面觀(2hrs)","hours":"2hr","level":"基礎","classType":"臨時","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"公共工程品質管理(機電)訓練班 (14天)","hours":"14天","level":"專業","classType":"專案","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"弱電工程專標案作業實務班(2天)","hours":"2天","level":"進階","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"智慧建築4.0 研習班(3hr)","hours":"3hr","level":"基礎","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"智慧建築標章評估研習班(6hr)","hours":"6hr","level":"基礎","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":14,"mapId":"5","L1":"智慧科技 – EdgeAI","L2":"EdgeAI","L3":"通用/未標示","course":"淨零建築與建築能效評估研習班(3hr)","hours":"3hr","level":"基礎","classType":"計畫","feature":"—","subCat":"EdgeAI","trainer":"(院本部) 智慧交通：曾家偉 張智堯 陳品全 智慧醫療：楊棣華 智慧製造：李克駿 智慧建築/環境：許逸寧 蘇俊揚 陳品全","contact":null},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"企業永續管理師證照(8天)","hours":"8天","level":"專業","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"中華電信淨零轉型課程(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"生物多樣性管理師認證(6天)","hours":"6天","level":"專業","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"生物多樣性研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"ISO 50001管理系統內部稽核員及法規鑑別研習班(1天)","hours":"1天","level":"進階","classType":"臨時","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"關鍵供應商減碳路徑規劃工作坊(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"ISO 14064-1 組織層級溫室氣體主任查證員(3天)","hours":"3天","level":"專業","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"ISO46001管理系統內部稽核員及法規鑑別研習班(1天)","hours":"1天","level":"進階","classType":"臨時","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"樹木碳匯公民科學家 認證(1天)","hours":"1天","level":"專業","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"淨零管理師證照(6天)","hours":"6天","level":"專業","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"ISO 14001管理系統內部稽核員及法規鑑別研習班(1天)","hours":"1天","level":"進階","classType":"臨時","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"ESG永續發展數位通識(1hr)","hours":"1hr","level":"基礎","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"全球淨零趨勢與目標 (1hr)","hours":"1hr","level":"基礎","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"中華電信淨零政策 /宣示目標與作為(1hr)","hours":"1hr","level":"基礎","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"淨零作為與實務成果 /自然碳匯(2hr)","hours":"2hr","level":"基礎","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"碳權與碳定價 /低碳轉型路徑規劃(2hr)","hours":"2hr","level":"基礎","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"ISO 50001管理系統通識及種子人員訓練班(6hr)","hours":"6hr","level":"基礎","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"ESG供應鏈永續-綠色採購(1hr)","hours":"1hr","level":"基礎","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"ISO 14067 產品碳足跡主任查證員(3天)","hours":"3天","level":"專業","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"ISO 14064-2專案層級確查證員(2天)","hours":"2天","level":"專業","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"ISO 14068-1 碳中和主任查證員(3天)","hours":"3天","level":"專業","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"供應商國際CDP供應鏈專案教育訓練(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"永續夥伴認證教育訓練 (二者稽核)(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"EV100電動車發展與機會(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"全球淨零目標(1hr)","hours":"1hr","level":"基礎","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"CHT溫室氣體盤查系統(1hr)","hours":"1hr","level":"基礎","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"供應體系溫室氣體碳盤查認證(2天)","hours":"2天","level":"專業","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"供應體系產品碳足跡管理與計算基礎認證(2天)","hours":"2天","level":"專業","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"AI智慧機房管理_空調系統優化技術研習班1天)","hours":"1天","level":"進階","classType":"臨時","feature":"本年新增課程","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"ISO 50001能源管理系統節能技術與實務研習班1天)","hours":"1天","level":"進階","classType":"臨時","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"ISO 46001管理系統通識及種子人員訓練班(6hr)","hours":"6hr","level":"基礎","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"ISO 14001管理系統通識及種子人員訓練班(6hr)","hours":"6hr","level":"基礎","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"ISO 50001:2018能源管理系統內部稽核員認證訓練班(2天)","hours":"2天","level":"專業","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"生態復育及動植物保育研習班","hours":"未標示","level":"進階","classType":"專案","feature":"本年新增課程","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"都市樹木生態及碳匯導論(3hr)","hours":"3hr","level":"基礎","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":15,"mapId":"6","L1":"環境永續 - ESG","L2":"ESG","L3":"通用/未標示","course":"生物多樣性保育趨勢與企業在地推展(2hr)","hours":"2hr","level":"基礎","classType":"專案","feature":"—","subCat":"ESG","trainer":"(院本部) 淨零永續：蕭毅 許逸寧 能源管理：蘇俊揚 供應鏈：張智堯 曾家偉 生物多樣性：許逸寧 蕭毅","contact":"總公司產發處 網分電力處"},{"page":16,"mapId":"7.1","L1":"全網韌性設施","L2":"通訊基礎知識與技術演進","L3":"通用/未標示","course":"Juniper Junos進階路由實務班(5天)","hours":"5天","level":"專業","classType":"計畫","feature":"—","subCat":"通訊基礎知識與技術演進","trainer":"院本部：陳伯濤 臺中所：林東養 高雄所：林禎吉","contact":"網分網路架構策略規劃處"},{"page":16,"mapId":"7.1","L1":"全網韌性設施","L2":"通訊基礎知識與技術演進","L3":"通用/未標示","course":"CCNP企業網路認證班(14天)","hours":"14天","level":"專業","classType":"計畫","feature":"—","subCat":"通訊基礎知識與技術演進","trainer":"院本部：陳伯濤 臺中所：林東養 高雄所：林禎吉","contact":"網分網路架構策略規劃處"},{"page":16,"mapId":"7.1","L1":"全網韌性設施","L2":"通訊基礎知識與技術演進","L3":"通用/未標示","course":"CCNA企業網路認證班(8天)","hours":"8天","level":"進階","classType":"計畫","feature":"—","subCat":"通訊基礎知識與技術演進","trainer":"院本部：陳伯濤 臺中所：林東養 高雄所：林禎吉","contact":"網分網路架構策略規劃處"},{"page":16,"mapId":"7.1","L1":"全網韌性設施","L2":"通訊基礎知識與技術演進","L3":"通用/未標示","course":"CCNA網路認證考照加強班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"通訊基礎知識與技術演進","trainer":"院本部：陳伯濤 臺中所：林東養 高雄所：林禎吉","contact":"網分網路架構策略規劃處"},{"page":16,"mapId":"7.1","L1":"全網韌性設施","L2":"通訊基礎知識與技術演進","L3":"通用/未標示","course":"DPI (Deep Packet Inspection技 術原理、方法與工具(2小時)","hours":"2小時","level":"進階","classType":"計畫","feature":"—","subCat":"通訊基礎知識與技術演進","trainer":"院本部：陳伯濤 臺中所：林東養 高雄所：林禎吉","contact":"網分網路架構策略規劃處"},{"page":16,"mapId":"7.1","L1":"全網韌性設施","L2":"通訊基礎知識與技術演進","L3":"通用/未標示","course":"新世代網路演進技術研習班(2天)","hours":"2天","level":"專業","classType":"計畫","feature":"—","subCat":"通訊基礎知識與技術演進","trainer":"院本部：陳伯濤 臺中所：林東養 高雄所：林禎吉","contact":"網分網路架構策略規劃處"},{"page":16,"mapId":"7.1","L1":"全網韌性設施","L2":"通訊基礎知識與技術演進","L3":"通用/未標示","course":"網路技術與應用實務-網路應用 (2小時)(全E)","hours":"2小時；全E","level":"基礎","classType":"專案","feature":"數位課程","subCat":"通訊基礎知識與技術演進","trainer":"院本部：陳伯濤 臺中所：林東養 高雄所：林禎吉","contact":"網分網路架構策略規劃處"},{"page":16,"mapId":"7.1","L1":"全網韌性設施","L2":"通訊基礎知識與技術演進","L3":"通用/未標示","course":"網路技術與應用實務-建立觀念(2小時)(全E)","hours":"2小時；全E","level":"基礎","classType":"專案","feature":"數位課程","subCat":"通訊基礎知識與技術演進","trainer":"院本部：陳伯濤 臺中所：林東養 高雄所：林禎吉","contact":"網分網路架構策略規劃處"},{"page":16,"mapId":"7.1","L1":"全網韌性設施","L2":"通訊基礎知識與技術演進","L3":"通用/未標示","course":"網路技術與應用實務-深入探(4小時)(全E)","hours":"4小時；全E","level":"基礎","classType":"專案","feature":"數位課程","subCat":"通訊基礎知識與技術演進","trainer":"院本部：陳伯濤 臺中所：林東養 高雄所：林禎吉","contact":"網分網路架構策略規劃處"},{"page":16,"mapId":"7.1","L1":"全網韌性設施","L2":"通訊基礎知識與技術演進","L3":"通用/未標示","course":"網路概論與運作原理班 (2天)(全E)","hours":"2天；全E","level":"基礎","classType":"專案","feature":"數位課程","subCat":"通訊基礎知識與技術演進","trainer":"院本部：陳伯濤 臺中所：林東養 高雄所：林禎吉","contact":"網分網路架構策略規劃處"},{"page":16,"mapId":"7.1","L1":"全網韌性設施","L2":"通訊基礎知識與技術演進","L3":"通用/未標示","course":"MOD網路群播路由協定班(1天) (全E)","hours":"1天；全E","level":"進階","classType":"專案","feature":"數位課程","subCat":"通訊基礎知識與技術演進","trainer":"院本部：陳伯濤 臺中所：林東養 高雄所：林禎吉","contact":"網分網路架構策略規劃處"},{"page":16,"mapId":"7.1","L1":"全網韌性設施","L2":"通訊基礎知識與技術演進","L3":"通用/未標示","course":"MPLS通信協定概念班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"通訊基礎知識與技術演進","trainer":"院本部：陳伯濤 臺中所：林東養 高雄所：林禎吉","contact":"網分網路架構策略規劃處"},{"page":16,"mapId":"7.1","L1":"全網韌性設施","L2":"通訊基礎知識與技術演進","L3":"通用/未標示","course":"OSPF 路由協定班(1天)","hours":"1天","level":"基礎","classType":"計畫","feature":"—","subCat":"通訊基礎知識與技術演進","trainer":"院本部：陳伯濤 臺中所：林東養 高雄所：林禎吉","contact":"網分網路架構策略規劃處"},{"page":16,"mapId":"7.1","L1":"全網韌性設施","L2":"通訊基礎知識與技術演進","L3":"通用/未標示","course":"IPv6核心技術研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"通訊基礎知識與技術演進","trainer":"院本部：陳伯濤 臺中所：林東養 高雄所：林禎吉","contact":"網分網路架構策略規劃處"},{"page":16,"mapId":"7.1","L1":"全網韌性設施","L2":"通訊基礎知識與技術演進","L3":"通用/未標示","course":"IPv6路由技術實務班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"通訊基礎知識與技術演進","trainer":"院本部：陳伯濤 臺中所：林東養 高雄所：林禎吉","contact":"網分網路架構策略規劃處"},{"page":16,"mapId":"7.1","L1":"全網韌性設施","L2":"通訊基礎知識與技術演進","L3":"通用/未標示","course":"IS-IS 路由協定班(4小時)(全E)","hours":"4小時；全E","level":"基礎","classType":"專案","feature":"數位課程","subCat":"通訊基礎知識與技術演進","trainer":"院本部：陳伯濤 臺中所：林東養 高雄所：林禎吉","contact":"網分網路架構策略規劃處"},{"page":16,"mapId":"7.1","L1":"全網韌性設施","L2":"通訊基礎知識與技術演進","L3":"通用/未標示","course":"Juniper Junos 基礎實務班(3天)","hours":"3天","level":"進階","classType":"計畫","feature":"—","subCat":"通訊基礎知識與技術演進","trainer":"院本部：陳伯濤 臺中所：林東養 高雄所：林禎吉","contact":"網分網路架構策略規劃處"},{"page":16,"mapId":"7.1","L1":"全網韌性設施","L2":"通訊基礎知識與技術演進","L3":"通用/未標示","course":"IPsec VPN應用實務(1天)","hours":"1天","level":"進階","classType":"專案","feature":"本年新增課程","subCat":"通訊基礎知識與技術演進","trainer":"院本部：陳伯濤 臺中所：林東養 高雄所：林禎吉","contact":"網分網路架構策略規劃處"},{"page":16,"mapId":"7.1","L1":"全網韌性設施","L2":"通訊基礎知識與技術演進","L3":"通用/未標示","course":"生成式AI於智慧封包解析之應用實務(2小時)","hours":"2小時","level":"專業","classType":"專案","feature":"本年新增課程","subCat":"通訊基礎知識與技術演進","trainer":"院本部：陳伯濤 臺中所：林東養 高雄所：林禎吉","contact":"網分網路架構策略規劃處"},{"page":16,"mapId":"7.1","L1":"全網韌性設施","L2":"通訊基礎知識與技術演進","L3":"通用/未標示","course":"開放全光網路現況與發展(0.5天)","hours":"0.5天","level":"專業","classType":"專案","feature":"本年新增課程","subCat":"通訊基礎知識與技術演進","trainer":"院本部：陳伯濤 臺中所：林東養 高雄所：林禎吉","contact":"網分網路架構策略規劃處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"HTB CDSA防禦資安分析師認證培訓班 (2 天) / HTB CPTS 滲透測試專家認證培訓班(3天)","hours":"2 天；3天","level":"專業","classType":"專案","feature":"本年新增課程","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"CompTIA Security+國際認證培訓班(5天)","hours":"5天","level":"專業","classType":"專案","feature":"—","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"SASE網路安全研習班(1天)","hours":"1天","level":"專業","classType":"計畫","feature":"—","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"電信機房法規與管理(1天)","hours":"1天","level":"基礎","classType":"計畫","feature":"—","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"MITRE ATT&CK基礎研習 (0.5天)","hours":"0.5天","level":"基礎","classType":"計畫","feature":"—","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"新型態網路攻擊 概論(0.5天)","hours":"0.5天","level":"基礎","classType":"計畫","feature":"—","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"網路安全概念(ZTNA、5G、AIoT、Cloud等) (1天)","hours":"1天","level":"基礎","classType":"計畫","feature":"—","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"EC-Council CEH道德駭客技術專家認證培訓班(5天)","hours":"5天","level":"專業","classType":"專案","feature":"—","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"電信雲安全管理(2hrs)","hours":"2hr","level":"專業","classType":"計畫","feature":"—","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"電信機房安全管理(2hrs)","hours":"2hr","level":"專業","classType":"計畫","feature":"—","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"VeloCloud SD-WAN 產品研習班 (0.5天)","hours":"0.5天","level":"進階","classType":"臨時","feature":"—","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"物聯網安全探索：韌體分析、漏洞檢測、威脅防範(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"智慧場域資安風險與防護對策(以工控與醫療為例) (1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"SD-WAN安全防護(2hrs)","hours":"2hr","level":"進階","classType":"計畫","feature":"—","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"SDN/NFV網路安全(2hrs)","hours":"2hr","level":"進階","classType":"計畫","feature":"—","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"虛擬化/雲化技術(1hr)","hours":"1hr","level":"進階","classType":"專案","feature":"—","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"寬頻維運基礎學程認證(4天) (包含彙集網路安全4小時)","hours":"4天；4小時","level":"進階","classType":"計畫","feature":"—","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"交換維運基礎學程認證(5天) (包含交換網路安全6小時)","hours":"5天；6小時","level":"進階","classType":"計畫","feature":"—","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"重要網路網管系統功能 說明與障礙查測應用 研習班(1天)","hours":"1天","level":"進階","classType":"專案","feature":"本年新增課程","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"NGN Browser 結合生成式 AI 與DPI訊務解析研習班(1天)","hours":"1天","level":"進階","classType":"專案","feature":"本年新增課程","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"車連網路安全(3hrs)","hours":"3hr","level":"專業","classType":"計畫","feature":"—","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"量子通訊(3hrs)","hours":"3hr","level":"專業","classType":"計畫","feature":"—","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"5G無線網路技術研習班 (包含無線網路安全1小時)","hours":"1小時","level":"進階","classType":"計畫","feature":"—","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":17,"mapId":"7.2","L1":"全網韌性設施","L2":"網路安全","L3":"通用/未標示","course":"5G核心網路技術研習班 (包含核心網路安全1小時)","hours":"1小時","level":"進階","classType":"計畫","feature":"—","subCat":"網路安全","trainer":"院本部：楊棣華、陳品全、高鍵峯、吳兆哲、曾家偉","contact":"總資安處、網分架構處&行維處、TL企劃處、資分資安處"},{"page":18,"mapId":"7.3","L1":"全網韌性設施","L2":"電力空調","L3":"通用/學程認證","course":"工業配線乙級技術士學程認證(24天)","hours":"24天","level":"專業","classType":"專案","feature":"—","subCat":"學程認證","trainer":"院本部：蘇俊揚、陳品全 台中所：許正旺 高雄所：黃文宏","contact":"網分電力空調規劃設計處 TL 資通技術整合處"},{"page":18,"mapId":"7.3","L1":"全網韌性設施","L2":"電力空調","L3":"通用/學程認證","course":"太陽光電設置乙級技術士學程認證(11天)","hours":"11天","level":"專業","classType":"專案","feature":"—","subCat":"學程認證","trainer":"院本部：蘇俊揚、陳品全 台中所：許正旺 高雄所：黃文宏","contact":"網分電力空調規劃設計處 TL 資通技術整合處"},{"page":18,"mapId":"7.3","L1":"全網韌性設施","L2":"電力空調","L3":"通用/學程認證","course":"室內配線丙級技術士學程認證(19天)","hours":"19天","level":"專業","classType":"計畫","feature":"—","subCat":"學程認證","trainer":"院本部：蘇俊揚、陳品全 台中所：許正旺 高雄所：黃文宏","contact":"網分電力空調規劃設計處 TL 資通技術整合處"},{"page":18,"mapId":"7.3","L1":"全網韌性設施","L2":"電力空調","L3":"通用/學程認證","course":"電力空調設備維運學程認證(5天)","hours":"5天","level":"專業","classType":"專案","feature":"—","subCat":"學程認證","trainer":"院本部：蘇俊揚、陳品全 台中所：許正旺 高雄所：黃文宏","contact":"網分電力空調規劃設計處 TL 資通技術整合處"},{"page":18,"mapId":"7.3","L1":"全網韌性設施","L2":"電力空調","L3":"設備維運人員","course":"高低壓受配電設備斷路器維護操作班(2天)","hours":"2天","level":"進階","classType":"專案","feature":"—","subCat":"設備維運","trainer":"院本部：蘇俊揚、陳品全 台中所：許正旺 高雄所：黃文宏","contact":"網分電力空調規劃設計處 TL 資通技術整合處"},{"page":18,"mapId":"7.3","L1":"全網韌性設施","L2":"電力空調","L3":"設備維運人員","course":"柴油引擎發電機技術研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"設備維運","trainer":"院本部：蘇俊揚、陳品全 台中所：許正旺 高雄所：黃文宏","contact":"網分電力空調規劃設計處 TL 資通技術整合處"},{"page":18,"mapId":"7.3","L1":"全網韌性設施","L2":"電力空調","L3":"設備維運人員","course":"電力設備維運案例分析班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"設備維運","trainer":"院本部：蘇俊揚、陳品全 台中所：許正旺 高雄所：黃文宏","contact":"網分電力空調規劃設計處 TL 資通技術整合處"},{"page":18,"mapId":"7.3","L1":"全網韌性設施","L2":"電力空調","L3":"設備維運人員","course":"交流電力設備維護精進班(2天)","hours":"2天","level":"進階","classType":"專案","feature":"—","subCat":"設備維運","trainer":"院本部：蘇俊揚、陳品全 台中所：許正旺 高雄所：黃文宏","contact":"網分電力空調規劃設計處 TL 資通技術整合處"},{"page":18,"mapId":"7.3","L1":"全網韌性設施","L2":"電力空調","L3":"設備維運人員","course":"電力空調緊急障礙處理演練實務 (1天)","hours":"1天","level":"進階","classType":"專案","feature":"—","subCat":"設備維運","trainer":"院本部：蘇俊揚、陳品全 台中所：許正旺 高雄所：黃文宏","contact":"網分電力空調規劃設計處 TL 資通技術整合處"},{"page":18,"mapId":"7.3","L1":"全網韌性設施","L2":"電力空調","L3":"規劃設計人員","course":"通信用交流電源系統工程設計班(2天)","hours":"2天","level":"進階","classType":"計畫","feature":"—","subCat":"規劃設計","trainer":"院本部：蘇俊揚、陳品全 台中所：許正旺 高雄所：黃文宏","contact":"網分電力空調規劃設計處 TL 資通技術整合處"},{"page":18,"mapId":"7.3","L1":"全網韌性設施","L2":"電力空調","L3":"規劃設計人員","course":"通信用直流電源系統工程設計班(2天)","hours":"2天","level":"進階","classType":"計畫","feature":"—","subCat":"規劃設計","trainer":"院本部：蘇俊揚、陳品全 台中所：許正旺 高雄所：黃文宏","contact":"網分電力空調規劃設計處 TL 資通技術整合處"},{"page":18,"mapId":"7.3","L1":"全網韌性設施","L2":"電力空調","L3":"規劃設計人員","course":"電信機房節能策略研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"規劃設計","trainer":"院本部：蘇俊揚、陳品全 台中所：許正旺 高雄所：黃文宏","contact":"網分電力空調規劃設計處 TL 資通技術整合處"},{"page":18,"mapId":"7.3","L1":"全網韌性設施","L2":"電力空調","L3":"規劃設計人員","course":"AIDC空調與散熱節能設計研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"本年新增課程","subCat":"規劃設計","trainer":"院本部：蘇俊揚、陳品全 台中所：許正旺 高雄所：黃文宏","contact":"網分電力空調規劃設計處 TL 資通技術整合處"},{"page":18,"mapId":"7.3","L1":"全網韌性設施","L2":"電力空調","L3":"規劃設計人員","course":"AIDC配電架構設計與新技術發展研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"本年新增課程","subCat":"規劃設計","trainer":"院本部：蘇俊揚、陳品全 台中所：許正旺 高雄所：黃文宏","contact":"網分電力空調規劃設計處 TL 資通技術整合處"},{"page":18,"mapId":"7.3","L1":"全網韌性設施","L2":"電力空調","L3":"規劃設計人員","course":"電信機房節約能源空調系統規劃設計班(2天)","hours":"2天","level":"進階","classType":"計畫","feature":"—","subCat":"規劃設計","trainer":"院本部：蘇俊揚、陳品全 台中所：許正旺 高雄所：黃文宏","contact":"網分電力空調規劃設計處 TL 資通技術整合處"},{"page":18,"mapId":"7.3","L1":"全網韌性設施","L2":"電力空調","L3":"設備維運人員","course":"太陽光電案場施工維運實務班(2天)","hours":"2天","level":"進階","classType":"專案","feature":"—","subCat":"設備維運","trainer":"院本部：蘇俊揚、陳品全 台中所：許正旺 高雄所：黃文宏","contact":"網分電力空調規劃設計處 TL 資通技術整合處"},{"page":18,"mapId":"7.3","L1":"全網韌性設施","L2":"電力空調","L3":"設備維運人員","course":"電力空調集中監控POSS系統建置班(1天)","hours":"1天","level":"基礎","classType":"專案","feature":"—","subCat":"監控與維運管理基礎知能","trainer":"院本部：蘇俊揚、陳品全 台中所：許正旺 高雄所：黃文宏","contact":"網分電力空調規劃設計處 TL 資通技術整合處"},{"page":18,"mapId":"7.3","L1":"全網韌性設施","L2":"電力空調","L3":"設備維運人員","course":"電力空調集中監控POSS系統運作班(1天)","hours":"1天","level":"基礎","classType":"專案","feature":"—","subCat":"監控與維運管理基礎知能","trainer":"院本部：蘇俊揚、陳品全 台中所：許正旺 高雄所：黃文宏","contact":"網分電力空調規劃設計處 TL 資通技術整合處"},{"page":18,"mapId":"7.3","L1":"全網韌性設施","L2":"電力空調","L3":"設備維運人員","course":"電力空調維運管理資訊系統(POMIS 2.0)操作班(1天)","hours":"1天","level":"基礎","classType":"專案","feature":"—","subCat":"監控與維運管理基礎知能","trainer":"院本部：蘇俊揚、陳品全 台中所：許正旺 高雄所：黃文宏","contact":"網分電力空調規劃設計處 TL 資通技術整合處"},{"page":18,"mapId":"7.3","L1":"全網韌性設施","L2":"電力空調","L3":"規劃設計人員","course":"AI智慧機房管理_空調系統優化技術研習班1天)","hours":"1天","level":"進階","classType":"計畫","feature":"本年新增課程","subCat":"規劃設計","trainer":"院本部：蘇俊揚、陳品全 台中所：許正旺 高雄所：黃文宏","contact":"網分電力空調規劃設計處 TL 資通技術整合處"},{"page":18,"mapId":"7.3","L1":"全網韌性設施","L2":"電力空調","L3":"設備維運人員","course":"蓄電池原理與應用實務研習班(1天)","hours":"1天","level":"進階","classType":"計畫","feature":"—","subCat":"設備維運","trainer":"院本部：蘇俊揚、陳品全 台中所：許正旺 高雄所：黃文宏","contact":"網分電力空調規劃設計處 TL 資通技術整合處"},{"page":18,"mapId":"7.3","L1":"全網韌性設施","L2":"電力空調","L3":"設備維運人員","course":"電信機房法規與管理(1天)","hours":"1天","level":"基礎","classType":"專案","feature":"—","subCat":"監控與維運管理基礎知能","trainer":"院本部：蘇俊揚、陳品全 台中所：許正旺 高雄所：黃文宏","contact":"網分電力空調規劃設計處 TL 資通技術整合處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"機房維運人員","course":"電信機房法規與管理(1天)","hours":"1天","level":"基礎","classType":"計畫","feature":"—","subCat":"技術研習與管理","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"機房規劃設計/建置人員","course":"Uptime Institute國際級機房標準認證介紹 (全e)(2 HR)","hours":"全e；2 HR","level":"基礎","classType":"專案","feature":"數位課程","subCat":"認證基本框架","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"機房規劃設計/建置人員","course":"EPI國際級機房標準認證介紹 (全e)(2 HR)","hours":"全e；2 HR","level":"基礎","classType":"專案","feature":"數位課程","subCat":"認證基本框架","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"機房規劃設計/建置人員","course":"BICSI國際級機房標準認證介紹 (全e)(2 HR)","hours":"全e；2 HR","level":"基礎","classType":"專案","feature":"數位課程","subCat":"認證基本框架","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"機房規劃設計/建置人員","course":"資料中心設計與 建置基礎班 (1天)","hours":"1天","level":"基礎","classType":"計畫","feature":"—","subCat":"機房與網路規劃設計","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"機房維運人員","course":"電力空調集中監控POSS系統研習 (2天)","hours":"2天","level":"基礎","classType":"計畫","feature":"—","subCat":"技術研習與管理","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"機房規劃設計/建置人員","course":"資料中心設計、建置與維運研習 (2天)","hours":"2天","level":"進階","classType":"計畫","feature":"本年新增課程","subCat":"機房與網路規劃設計","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"機房規劃設計/建置人員","course":"佈線系統設計基礎研習 (2 天)","hours":"2 天","level":"進階","classType":"計畫","feature":"—","subCat":"機房與網路規劃設計","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"機房規劃設計/建置人員","course":"機房節能策略及能源空調研習 (2 天)","hours":"2 天","level":"進階","classType":"計畫","feature":"—","subCat":"電力、空調","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"機房規劃設計/建置人員","course":"儲能系統及蓄電池研習 (2 天)","hours":"2 天","level":"進階","classType":"計畫","feature":"—","subCat":"電力、空調","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"機房規劃設計/建置人員","course":"通信用交+直流電源系統工程設計(2+2 天)","hours":"2+2 天","level":"進階","classType":"計畫","feature":"—","subCat":"電力、空調","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"機房規劃設計/建置人員","course":"機房散熱技術–氣冷、液冷到沉浸式冷卻 (1 天)","hours":"1 天","level":"進階","classType":"計畫","feature":"—","subCat":"電力、空調","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"機房維運人員","course":"能源集中監控中心(EOC)實務應用 (1 天)","hours":"1 天","level":"進階","classType":"計畫","feature":"—","subCat":"技術研習與管理","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"機房維運人員","course":"工程製圖+BIM管理與應用 (2+2 天)","hours":"2+2 天","level":"進階","classType":"計畫","feature":"—","subCat":"技術研習與管理","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"IDC專業認證人員","course":"CDCP 機房管理認證(專班)(2 天)","hours":"2 天","level":"專業","classType":"專案","feature":"—","subCat":"機房規劃設計/建置","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"IDC專業認證人員","course":"CDCS 機房管理專家認證 (專班)(3 天)","hours":"3 天","level":"專業","classType":"專案","feature":"—","subCat":"機房規劃設計/建置","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"IDC專業認證人員","course":"CDCE管理行家認證 (專班)(5 天)","hours":"5 天","level":"專業","classType":"專案","feature":"—","subCat":"EPI 認證","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"IDC專業認證人員","course":"CNCDP 網路佈線設計專家認證 (專班)(2 天)","hours":"2 天","level":"專業","classType":"專案","feature":"—","subCat":"機房規劃設計/建置","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"IDC專業認證人員","course":"ATD Tier 設計師認證 (專班)(3 天)","hours":"3 天","level":"專業","classType":"專案","feature":"—","subCat":"機房規劃設計/建置","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"IDC專業認證人員","course":"ATP Tier 設計師認證 (專班)(3 天)","hours":"3 天","level":"專業","classType":"專案","feature":"—","subCat":"Uptime Institute認證","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"IDC專業認證人員","course":"DCDC數據中心 設計顧問認證 (專班)(5 天)","hours":"5 天","level":"專業","classType":"專案","feature":"—","subCat":"BICSI 認證","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"IDC專業認證人員","course":"ACU 工程製圖認證 (專班)(4 天)","hours":"4 天","level":"專業","classType":"專案","feature":"—","subCat":"其他專業認證","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"IDC專業認證人員","course":"ITIL 4 Foundation 認證(專班) (4 天)","hours":"4 天","level":"專業","classType":"專案","feature":"—","subCat":"機房維運","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"IDC專業認證人員","course":"CDFOM 基礎設施運營 經理認證 (專班)(3 天)","hours":"3 天","level":"專業","classType":"專案","feature":"—","subCat":"EPI 認證","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"IDC專業認證人員","course":"AOS 運維管理師認證 (專班)(3 天)","hours":"3 天","level":"專業","classType":"專案","feature":"—","subCat":"Uptime Institute認證","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"IDC專業認證人員","course":"CDESS 機房環境可持續 發展專家認證 (專班)(2 天)","hours":"2 天","level":"專業","classType":"專案","feature":"—","subCat":"機房維運","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"IDC專業認證人員","course":"ISO 50001 內部稽核員認證 (專班)(2 天)","hours":"2 天","level":"專業","classType":"專案","feature":"—","subCat":"機房維運","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"機房維運人員","course":"水冷系統與機房空調模擬實務 (專班)(1 天)","hours":"1 天","level":"進階","classType":"專案","feature":"—","subCat":"電力、空調","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"IDC專業認證人員","course":"DCDC數據中心 設計顧問基礎班 (專班)(3 天)","hours":"3 天","level":"專業","classType":"專案","feature":"—","subCat":"機房規劃設計/建置","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"},{"page":19,"mapId":"7.4","L1":"全網韌性設施","L2":"IDC","L3":"機房維運人員","course":"資料中心熱流模擬與設計驗證 (全e) (2 HR)","hours":"全e；2 HR","level":"基礎","classType":"專案","feature":"數位課程","subCat":"技術研習與管理","trainer":"院本部：陳品全、蘇俊揚 臺中所：許正旺 高雄所：林禎吉","contact":"資分雲端處 ; 企分數據處、企服處、資通處 ; 國分電業處、技服處"}];
+
+/* ---------- config ---------- */
+const DOMAIN_ORDER = ['固網','行網','衛星','海纜','智慧科技 – EdgeAI','環境永續 - ESG','全網韌性設施'];
+const DCOLORS = {
+  '固網':            ['#00e5ff','rgba(0,229,255,.16)'],
+  '行網':            ['#7c6cff','rgba(124,108,255,.16)'],
+  '衛星':            ['#ffb648','rgba(255,182,72,.16)'],
+  '海纜':            ['#2f7bff','rgba(47,123,255,.16)'],
+  '智慧科技 – EdgeAI':['#3ddc84','rgba(61,220,132,.16)'],
+  '環境永續 - ESG':   ['#d4e157','rgba(212,225,87,.16)'],
+  '全網韌性設施':     ['#ff5d8f','rgba(255,93,143,.16)']
+};
+const LV_ORDER = {'基礎':0,'進階':1,'專業':2,'未判讀':3};
+const LV_COLOR = {'基礎':'var(--lv-basic)','進階':'var(--lv-adv)','專業':'var(--lv-pro)','未判讀':'#556'};
+
+/* ---------- build tree ---------- */
+const tree = {};
+RAW.forEach(r=>{
+  const d = tree[r.L1] ??= {name:r.L1, count:0, lv:{}, l2:{}};
+  d.count++; d.lv[r.level]=(d.lv[r.level]||0)+1;
+  const l2 = d.l2[r.L2] ??= {name:r.L2, count:0, lv:{}, l3:{}, trainers:new Set(), contacts:new Set(), pages:new Set()};
+  l2.count++; l2.lv[r.level]=(l2.lv[r.level]||0)+1;
+  if(r.trainer) l2.trainers.add(r.trainer);
+  if(r.contact) l2.contacts.add(r.contact);
+  l2.pages.add(r.page);
+  const l3 = l2.l3[r.L3] ??= {name:r.L3, count:0, grps:{}, trainers:new Set(), contacts:new Set()};
+  l3.count++;
+  if(r.trainer) l3.trainers.add(r.trainer);
+  if(r.contact) l3.contacts.add(r.contact);
+  const gname = r.subCat || r.L2;
+  const g = l3.grps[gname] ??= {name:gname, courses:[], lv:{}};
+  g.courses.push(r); g.lv[r.level]=(g.lv[r.level]||0)+1;
+});
+
+const TOTAL = RAW.length;
+const state = {domain:null, l2:null, filter:'全部'};
+
+/* ---------- overview : L1/L2 matrix ---------- */
+function lvbarHTML(lv,total){
+  return ['基礎','進階','專業'].map(k=>{
+    const w=((lv[k]||0)/total*100).toFixed(1);
+    return `<i style="width:${w}%;background:${LV_COLOR[k]}"></i>`;
+  }).join('');
+}
+/* L2 子分類（依學習地圖總覽頁） */
+const OV_NET = ['固網','行網','衛星','海纜'];
+const OV_L2 = {
+  '固網':['接取','單一彙集','核心'],
+  '行網':['接取','單一彙集','核心'],
+  '衛星':['接取','單一彙集','核心'],
+  '海纜':['接取','單一彙集','核心'],
+  '智慧科技 – EdgeAI':['邊緣運算','無人機','新興科技','智慧交通','智慧醫療','智慧製造','智慧建築','智慧環境'],
+  '環境永續 - ESG':['淨零永續','能源管理','供應鏈','生物多樣性'],
+  '全網韌性設施':['通訊基礎知識與技術演進','網路安全','電力空調','IDC']
+};
+function clickL2(domain,label){
+  if(label==='單一彙集'){ openDomain('固網','單一彙集'); return; }
+  const d=tree[domain];
+  openDomain(domain, d && d.l2[label] ? label : undefined);
+}
+let TILE_I=0;
+function tileStyle(name){
+  const [c,g]=DCOLORS[name];
+  return `--c:${c};--g:${g};animation-delay:${60+(TILE_I++)*45}ms`;
+}
+function l2tileHTML(domain,label,no,extraCls){
+  return `<div class="l2tile tile ${extraCls||''}" style="${tileStyle(domain)}"
+    onclick="clickL2('${domain}','${label}')"><span class="no">${no}.</span>${label}</div>`;
+}
+function renderOverview(){
+  TILE_I=0;
+  const m=document.getElementById('matrix');
+  let html=`<div class="lvlab">LEVEL 1 領域</div>`;
+  DOMAIN_ORDER.forEach((name,i)=>{
+    html+=`<div class="l1tile tile" style="${tileStyle(name)}" onclick="openDomain('${name}')">
+      <div class="idx">0${i+1}</div><div class="nm">${name}</div></div>`;
+  });
+  html+=`<div class="lvlab">LEVEL 2 專業子分類</div>`;
+  // 固網～海纜：接取 ×4 ／ 單一彙集（橫跨）／ 核心 ×4
+  html+=`<div class="netzone">`;
+  OV_NET.forEach(n=>html+=l2tileHTML(n,'接取',1));
+  html+=`<div class="l2tile tile span" style="animation-delay:${60+(TILE_I++)*45}ms"
+    onclick="clickL2('固網','單一彙集')"><span class="no">2.</span>單一彙集</div>`;
+  OV_NET.forEach(n=>html+=l2tileHTML(n,'核心',3));
+  html+=`</div>`;
+  // EdgeAI（雙欄）、ESG、全網韌性設施
+  [['智慧科技 – EdgeAI','two'],['環境永續 - ESG',''],['全網韌性設施','']].forEach(([name,cls])=>{
+    html+=`<div class="colstack ${cls}">`;
+    OV_L2[name].forEach((l2,j)=>html+=l2tileHTML(name,l2,j+1));
+    html+=`</div>`;
+  });
+  m.innerHTML=html;
+  // mobile cards
+  const grid=document.getElementById('ovgrid'); grid.innerHTML='';
+  DOMAIN_ORDER.forEach((name,i)=>{
+    const [c,g]=DCOLORS[name];
+    const card=document.createElement('div');
+    card.className='ovcard';
+    card.style.borderLeft=`3px solid ${c}`;
+    card.innerHTML=`<div class="idx" style="color:${c}">LEVEL 1 · 0${i+1}</div>
+      <div class="nm" onclick="openDomain('${name}')">${name}</div>
+      <div class="chips">${OV_L2[name].map((l2,j)=>
+        `<div class="l2tile" style="--c:${c};--g:${g}" onclick="clickL2('${name}','${l2}')"><span class="no">${j+1}.</span>${l2}</div>`).join('')}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+/* ---------- domain view ---------- */
+function openDomain(name, l2Pick, highlight){
+  state.domain=name;
+  const d=tree[name];
+  const l2names=Object.keys(d.l2);
+  state.l2 = l2Pick && d.l2[l2Pick] ? l2Pick : l2names[0];
+  state.filter='全部';
+  const [c,glow]=DCOLORS[name];
+  const idx=DOMAIN_ORDER.indexOf(name)+1;
+  const sec=document.getElementById('domain');
+  sec.style.setProperty('--dc',c);
+  sec.style.setProperty('--dc-glow',glow);
+  sec.innerHTML=`
+    <div class="crumbs">
+      <span class="backbtn" onclick="goHome()">◂ 返回總覽</span>
+      <a onclick="goHome()">學習地圖</a><span class="sep">/</span>
+      <span class="cur">${name}</span>
+    </div>
+    <div class="dhead">
+      <div class="row">
+        <div>
+          <div class="code">DOMAIN 0${idx}</div>
+          <h2>${name}</h2>
+        </div>
+        <div class="dstats">
+          <div class="dstat"><div class="v">${d.count}</div><div class="k">課程總數</div></div>
+          <div class="dstat"><div class="v">${l2names.length}</div><div class="k">專業子領域</div></div>
+          <div class="dstat"><div class="v" style="color:var(--lv-basic)">${d.lv['基礎']||0}</div><div class="k">基礎</div></div>
+          <div class="dstat"><div class="v" style="color:var(--lv-adv)">${d.lv['進階']||0}</div><div class="k">進階</div></div>
+          <div class="dstat"><div class="v" style="color:var(--lv-pro)">${d.lv['專業']||0}</div><div class="k">專業</div></div>
+        </div>
+      </div>
+      <div class="dlvbar">${lvbarHTML(d.lv,d.count)}</div>
+    </div>
+    <div class="l2pills" id="l2pills"></div>
+    <div class="filters">
+      <span class="lab">難度篩選</span>
+      ${['全部','基礎','進階','專業'].map(lv=>`<span class="fchip ${lv==='全部'?'on':''}" data-lv="${lv}" onclick="setFilter('${lv}')">${lv}</span>`).join('')}
+    </div>
+    <div id="l2content"></div>`;
+  const pills=document.getElementById('l2pills');
+  l2names.forEach(n=>{
+    const p=document.createElement('span');
+    p.className='pill'+(n===state.l2?' on':'');
+    p.innerHTML=`${n}<span class="n">${d.l2[n].count}</span>`;
+    p.onclick=()=>{state.l2=n;state.filter='全部';
+      pills.querySelectorAll('.pill').forEach(x=>x.classList.remove('on'));
+      p.classList.add('on');
+      document.querySelectorAll('.fchip').forEach(x=>x.classList.toggle('on',x.dataset.lv==='全部'));
+      renderL2();};
+    pills.appendChild(p);
+  });
+  switchView('domain');
+  renderL2(highlight);
+}
+
+function metaBlock(trainers,contacts,extra){
+  return `<div class="l2meta">
+    <div class="item"><div class="k"><i></i>負責培訓師</div><div class="v">${[...trainers].join('<br>')||'—'}</div></div>
+    <div class="item"><div class="k"><i></i>事業單位窗口</div><div class="v">${[...contacts].join('<br>')||'—'}</div></div>
+    ${extra||''}
+  </div>`;
+}
+
+function renderL2(highlight){
+  const d=tree[state.domain], l2=d.l2[state.l2];
+  const box=document.getElementById('l2content');
+  const l3names=Object.keys(l2.l3);
+  const showL3 = l3names.length>1 || (l3names[0]!=='通用/未標示');
+  let html='';
+  // L2-level meta only if single L3 (otherwise meta per L3 section)
+  const multiTrainer = l3names.length>1;
+  if(!multiTrainer){
+    html+=metaBlock(l2.l3[l3names[0]].trainers, l2.l3[l3names[0]].contacts,
+      `<div class="item"><div class="k"><i></i>學習地圖</div><div class="v">原始 PPT 第 ${[...l2.pages].sort((a,b)=>a-b).join('、')} 頁</div></div>`);
+  }
+  l3names.forEach(l3n=>{
+    const l3=l2.l3[l3n];
+    html+=`<div class="l3sec">`;
+    if(showL3){
+      html+=`<div class="l3title">${l3n}<span class="cnt">${l3.count} 門</span></div>`;
+      if(multiTrainer){
+        html+=`<div class="l3meta">培訓師：<b>${[...l3.trainers].join(' ／ ')||'—'}</b>　·　窗口：<b>${[...l3.contacts].join(' ／ ')||'—'}</b></div>`;
+      }
+    }
+    // groups by 專業細分類
+    const gnames=Object.keys(l3.grps);
+    gnames.forEach(gn=>{
+      const g=l3.grps[gn];
+      html+=grpHTML(gn, g.courses, g.lv, highlight);
+    });
+    html+=`</div>`;
+  });
+  box.innerHTML=html;
+  applyFilterDOM();
+  if(highlight){
+    const el=box.querySelector(`[data-course="${CSS.escape(highlight)}"]`);
+    if(el){
+      el.closest('.grp')?.classList.add('open');
+      setTimeout(()=>{el.scrollIntoView({behavior:'smooth',block:'center'});
+        el.style.background='rgba(0,229,255,.12)';
+        setTimeout(()=>el.style.background='',1800);},150);
+    }
+  }
+}
+
+let GRP_ID=0;
+function grpHTML(name,courses,lv,highlight){
+  const id='g'+(GRP_ID++);
+  const open = courses.some(c=>c.course===highlight);
+  const rows=courses.slice().sort((a,b)=>LV_ORDER[a.level]-LV_ORDER[b.level]).map(c=>{
+    let tags='';
+    if(c.hours) tags+=`<span class="tag hours">${c.hours}</span>`;
+    if(c.classType) tags+=`<span class="tag">${c.classType}</span>`;
+    if(c.feature && c.feature!=='—'){
+      c.feature.split('；').forEach(f=>{
+        if(f.includes('數位')) tags+=`<span class="tag digital">數位課程</span>`;
+        if(f.includes('新增')) tags+=`<span class="tag new">本年新增</span>`;
+      });
+    }
+    return `<div class="crow" data-lv="${c.level}" data-course="${esc(c.course)}">
+      <span class="lv ${c.level}">${c.level}</span>
+      <span class="cname">${esc(c.course)}</span>
+      <span class="tags">${tags}</span></div>`;
+  }).join('');
+  return `<div class="grp ${open?'open':''}" id="${id}">
+    <div class="grp-h" onclick="this.parentElement.classList.toggle('open')">
+      <span class="arrow">▸</span>
+      <span class="gname">${esc(name)}</span>
+      <span class="minibar">${lvbarHTML(lv,courses.length)}</span>
+      <span class="gcnt">${courses.length} 門</span>
+    </div>
+    <div class="grp-b"><div class="clist">${rows}</div></div>
+  </div>`;
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
+
+function setFilter(lv){
+  state.filter=lv;
+  document.querySelectorAll('.fchip').forEach(x=>x.classList.toggle('on',x.dataset.lv===lv));
+  applyFilterDOM();
+}
+function applyFilterDOM(){
+  const lv=state.filter;
+  document.querySelectorAll('#l2content .crow').forEach(r=>{
+    r.classList.toggle('hidden', lv!=='全部' && r.dataset.lv!==lv);
+  });
+  document.querySelectorAll('#l2content .grp').forEach(g=>{
+    const vis=g.querySelectorAll('.crow:not(.hidden)').length;
+    g.style.display = vis? '':'none';
+    if(lv!=='全部' && vis) g.classList.add('open');
+  });
+}
+
+/* ---------- navigation ---------- */
+function switchView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0});
+}
+function goHome(){state.domain=null;switchView('overview');renderOverview();}
+
+/* ---------- search ---------- */
+const q=document.getElementById('q'), sres=document.getElementById('searchres');
+q.addEventListener('input',()=>{
+  const v=q.value.trim();
+  if(v.length<1){sres.classList.remove('show');return;}
+  const hits=RAW.filter(r=>r.course.includes(v) || (r.subCat&&r.subCat.includes(v))).slice(0,40);
+  if(!hits.length){sres.innerHTML=`<div class="sr-h">找不到符合「${esc(v)}」的課程</div>`;sres.classList.add('show');return;}
+  sres.innerHTML=`<div class="sr-h">找到 ${hits.length} 門課程</div>`+hits.map((r,i)=>`
+    <div class="sr-item" data-i="${i}">
+      <div class="p">${esc(r.L1)} ／ ${esc(r.L2)}${r.L3&&r.L3!=='通用/未標示'?' ／ '+esc(r.L3):''}</div>
+      <div class="n"><span class="dot" style="background:${LV_COLOR[r.level]}"></span>${esc(r.course)}</div>
+    </div>`).join('');
+  sres.querySelectorAll('.sr-item').forEach(el=>{
+    el.onclick=()=>{
+      const r=hits[+el.dataset.i];
+      sres.classList.remove('show'); q.value='';
+      openDomain(r.L1, r.L2, r.course);
+    };
+  });
+  sres.classList.add('show');
+});
+document.addEventListener('click',e=>{
+  if(!sres.contains(e.target)&&e.target!==q) sres.classList.remove('show');
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){sres.classList.remove('show');q.blur();}});
+
+/* ---------- particle bg ---------- */
+(function(){
+  const cv=document.getElementById('bg'), ctx=cv.getContext('2d');
+  let W,H,pts=[];
+  function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight;}
+  resize(); addEventListener('resize',resize);
+  const N=Math.min(70,Math.round(innerWidth/22));
+  for(let i=0;i<N;i++)pts.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,
+    vx:(Math.random()-.5)*.32,vy:(Math.random()-.5)*.32});
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function frame(){
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>W)p.vx*=-1; if(p.y<0||p.y>H)p.vy*=-1;
+    });
+    for(let i=0;i<pts.length;i++){
+      const a=pts[i];
+      ctx.fillStyle='rgba(0,229,255,.35)';
+      ctx.fillRect(a.x-1,a.y-1,2,2);
+      for(let j=i+1;j<pts.length;j++){
+        const b=pts[j],dx=a.x-b.x,dy=a.y-b.y,dd=dx*dx+dy*dy;
+        if(dd<150*150){
+          ctx.strokeStyle=`rgba(0,180,255,${(1-dd/22500)*.10})`;
+          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+        }
+      }
+    }
+    if(!reduced)requestAnimationFrame(frame);
+  }
+  frame();
+})();
+
+renderOverview();
+</script>
+</body>
+</html>
