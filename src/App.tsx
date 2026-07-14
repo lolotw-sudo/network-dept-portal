@@ -8,6 +8,7 @@ import LearningMap from "./pages/LearningMap";
 import LearningMapModal from "./pages/LearningMapModal";
 import StrategyMap from "./pages/StrategyMap";
 import TeacherGuide from "./pages/TeacherGuide";
+import CourseMap from "./pages/CourseMap";
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/strategy-map" element={<StrategyMap />} />
         <Route path="/guide/teachers" element={<TeacherGuide />} />
         <Route path="/focus/yearly" element={<YearFocus />} />
+        <Route path="/course-map" element={<CourseMap />} />
       </Routes>
     </HashRouter>
   );
