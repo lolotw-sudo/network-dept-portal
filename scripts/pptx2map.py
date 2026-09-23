@@ -11,9 +11,13 @@
   子分類 = 與哪個區域標題方塊重疊面積最大
   其餘欄位讀自每張投影片上方的表頭表格，不靠座標，不會錯。
 """
-import argparse, json, re, sys
+import argparse, json, os, re, sys
 from pptx import Presentation
 from pptx.util import Emu
+
+DEFAULT_XLSX = ("/Users/lolo/Library/CloudStorage/OneDrive-ChunghwaTelecomCo.,Ltd/"
+                "學院-work/work庶務/網路學系portal/network-dept-portal/"
+                "學習地圖PPT AI轉檔excel(for網頁顯示）.xlsx")
 
 DEFAULT_PPTX = ("/Users/lolo/Library/CloudStorage/OneDrive-ChunghwaTelecomCo.,Ltd/"
                 "學院-work/work庶務/人發會&新版學習地圖/"
@@ -275,6 +279,39 @@ def parse_slide(slide, slide_no, slide_w, slide_h):
     return rows
 
 
+# 人工在 Excel 上改過的欄位，一律贏過從 PPT 座標判讀出來的值
+OVERRIDABLE = {8: "level", 9: "classType", 10: "feature", 11: "subCat", 7: "hours"}
+
+
+def apply_overrides(rows, path):
+    """套用校對表上的人工修正。以（地圖編號＋課程名稱）對應，對不上的就略過。"""
+    import openpyxl
+    key = lambda mid, course: (str(mid).strip(), " ".join(str(course).split()))
+    book = openpyxl.load_workbook(path, read_only=True).active
+    table = {}
+    for r in list(book.iter_rows(values_only=True))[1:]:
+        if r and len(r) > 11 and r[6]:
+            table[key(r[1], r[6])] = r
+    hits, changed, notes = set(), 0, []
+    for row in rows:
+        k = key(row["mapId"], row["course"])
+        src = table.get(k)
+        if not src:
+            continue
+        hits.add(k)
+        for col, field in OVERRIDABLE.items():
+            val = ("" if src[col] is None else str(src[col])).strip()
+            if val and val != str(row[field]).strip():
+                row[field] = val
+                row["warn"] = ""          # 人工指定的就不必再標待確認
+                changed += 1
+    stale = [k[1] for k in table if k not in hits]
+    notes.append(f"校對表覆寫 {changed} 個欄位（{len(hits)}/{len(table)} 筆對得上）")
+    if stale:
+        notes.append(f"⚠️ 校對表有 {len(stale)} 筆在 PPT 裡找不到（課名可能改了）：{stale[0][:30]} …")
+    return notes
+
+
 def postprocess(rows):
     """跨投影片的收尾：同名地圖合併、整張沒分類的地圖不再嘮叨。"""
     notes = []
@@ -308,6 +345,9 @@ def main():
     ap.add_argument("--slides", help="只處理這幾張，例如 3,4")
     ap.add_argument("--xlsx", help="輸出校對用 Excel")
     ap.add_argument("--json", help="輸出網頁用 JSON")
+    ap.add_argument("--overrides", default=DEFAULT_XLSX,
+                    help="校對表 xlsx，上面的人工修正會蓋過 PPT 判讀結果")
+    ap.add_argument("--no-overrides", action="store_true", help="忽略校對表，只用 PPT")
     ap.add_argument("--inject", action="store_true",
                     help="把資料寫回 public/ 與 dist/ 的 course-map.html")
     a = ap.parse_args()
@@ -320,6 +360,10 @@ def main():
             continue
         rows += parse_slide(s, i, prs.slide_width, prs.slide_height)
     notes = postprocess(rows)
+    if not a.no_overrides and a.overrides and os.path.exists(a.overrides):
+        notes += apply_overrides(rows, a.overrides)
+    elif not a.no_overrides:
+        notes.append(f"（找不到校對表，只用 PPT 判讀）：{a.overrides}")
 
     print(f"來源：{a.pptx}")
     print(f"抽出 {len(rows)} 筆課程，其中 {sum(1 for r in rows if r['warn'])} 筆需人工確認")
@@ -381,7 +425,7 @@ def main():
 
 def inject(rows, pptx, arch=None):
     """把課程資料寫回 public/course-map.html，並同步一份到 dist/（build 產物）。"""
-    import shutil, os
+    import shutil
     payload = json.dumps(rows, ensure_ascii=False)
     maps = len({r["mapId"] for r in rows})
     src = f"{os.path.basename(pptx)}（學習地圖 2.0 · {maps} 張學習地圖 · {len(rows)} 筆課程）"
