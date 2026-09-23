@@ -299,6 +299,39 @@ footer{padding:18px 32px;border-top:1px solid var(--line);font-size:11.5px;color
 .l2tile.lv3{min-height:0;padding:9px 13px;font-size:12.5px;opacity:.92}
 .l2tile .note{color:var(--c);font-size:11px;vertical-align:super;margin-left:3px}
 .archnotes{max-width:1560px;margin:14px auto 0;text-align:center;font-size:11.5px;color:var(--dim);letter-spacing:.04em}
+
+/* --- 原始學習地圖縮圖 --- */
+.mapref{border:1px solid rgba(120,180,255,.16);border-radius:12px;background:rgba(10,18,32,.5);
+  padding:14px 16px;margin-bottom:18px}
+.mapref{transition:border-color .2s}
+.mapref.open{border-color:var(--dc)}
+.mapref-h{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--dim);
+  letter-spacing:.06em;cursor:pointer;user-select:none}
+.mapref-h .arrow{width:22px;height:22px;border-radius:6px;flex:none;display:grid;place-items:center;
+  border:1px solid rgba(255,255,255,.14);font-size:10px;transition:.25s}
+.mapref.open .mapref-h .arrow{transform:rotate(90deg);border-color:var(--dc);background:var(--dc-glow)}
+.mapref-h:hover{color:var(--txt)}
+.mapref-b{max-height:0;overflow:hidden;transition:max-height .45s cubic-bezier(.2,.8,.2,1)}
+.mapref.open .mapref-b{max-height:1200px;margin-top:13px}
+.mapref-h i{width:6px;height:6px;border-radius:50%;background:var(--dc);box-shadow:0 0 8px var(--dc)}
+.mapref-h .pg{color:var(--txt);font-family:'Rajdhani';font-weight:600;letter-spacing:1px}
+.mapref-h .hint{margin-left:auto;opacity:.6;font-size:11.5px}
+.mapref-b .inner{display:flex;gap:12px;flex-wrap:wrap}
+.mapthumb{width:min(100%,420px);border-radius:8px;border:1px solid rgba(255,255,255,.12);
+  cursor:zoom-in;transition:.18s;background:#fff;display:block}
+.mapthumb:hover{border-color:var(--dc);box-shadow:0 6px 26px var(--dc-glow);transform:translateY(-2px)}
+#lightbox[hidden]{display:none}   /* 自訂的 display 會蓋掉瀏覽器預設的 hidden，要明寫 */
+#lightbox{position:fixed;inset:0;z-index:99;background:rgba(3,7,14,.92);backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;padding:32px;cursor:zoom-out}
+.lb-inner{position:relative;max-width:1400px;width:100%}
+.lb-inner img{width:100%;border-radius:10px;box-shadow:0 24px 80px rgba(0,0,0,.6);background:#fff}
+.lb-inner .cap{text-align:center;margin-top:12px;font-size:12.5px;color:var(--dim);letter-spacing:.06em}
+.lb-close{position:absolute;top:-30px;right:0;color:var(--dim);font-size:18px;cursor:pointer}
+.lb-close:hover{color:#fff}
+@media(max-width:760px){.mapthumb{width:100%}#lightbox{padding:14px}}
+
+footer .src a{color:var(--accent);text-decoration:none;border-bottom:1px dotted currentColor}
+footer .src a:hover{color:#fff;border-bottom-style:solid}
 </style>
 </head>
 <body>
@@ -334,9 +367,13 @@ footer{padding:18px 32px;border-top:1px solid var(--line);font-size:11.5px;color
 <div id="searchres"></div>
 
 <footer>
-  <span>資料來源：115網路學系_學習地圖_培訓師（network portal AI資料）.pptx（學習地圖 2.0 · 13 張學習地圖 · 385 筆課程）</span>
+  <span class="src">資料來源：<a href="https://cht365-my.sharepoint.com/:x:/g/personal/lolo_cht_com_tw/IQBQr5lJPC7JTI25Dyt38MTvAedkWgzLJctyGPHNgeQsdHQ?e=YmDUwz" target="_blank" rel="noopener">學習地圖PPT AI轉檔excel(for網頁顯示）.xlsx</a>（學習地圖 2.0 · 13 張學習地圖 · 385 筆課程）</span>
   <span>難度依原學習地圖「基礎／進階／專業」區塊位置判讀</span>
 </footer>
+<div id="lightbox" hidden onclick="closeLightbox()">
+  <div class="lb-inner"><img alt=""><div class="cap"></div>
+  <span class="lb-close" title="關閉（Esc）">✕</span></div>
+</div>
 </div>
 
 <script>
@@ -510,17 +547,40 @@ function metaBlock(trainers,contacts,extra){
   </div>`;
 }
 
+/* 原始學習地圖：課程資料帶著 page（第幾張投影片），縮圖自動對應 */
+function mapRefHTML(pages){
+  const ps=[...pages].sort((a,b)=>a-b);
+  if(!ps.length) return '';
+  return `<div class="mapref">
+    <div class="mapref-h" onclick="this.parentElement.classList.toggle('open')">
+      <span class="arrow">▸</span><i></i>原始學習地圖<span class="pg">PPT 第 ${ps.join('、')} 頁</span>
+      <span class="hint">展開查看</span></div>
+    <div class="mapref-b"><div class="inner">${ps.map(n=>{
+      const src=`map-slides/slide-${String(n).padStart(2,'0')}.png`;
+      return `<img class="mapthumb" loading="lazy" src="${src}" alt="學習地圖 PPT 第 ${n} 頁"
+        onclick="openLightbox('${src}','學習地圖 · PPT 第 ${n} 頁')">`;
+    }).join('')}</div></div></div>`;
+}
+function openLightbox(src,cap){
+  const lb=document.getElementById('lightbox');
+  lb.querySelector('img').src=src;
+  lb.querySelector('.cap').textContent=cap||'';
+  lb.hidden=false;
+}
+function closeLightbox(){const lb=document.getElementById('lightbox'); if(lb) lb.hidden=true;}
+document.addEventListener('keydown',e=>{if(e.key==='Escape') closeLightbox();});
+
 function renderL2(highlight){
   const d=tree[state.domain], l2=d.l2[state.l2];
   const box=document.getElementById('l2content');
   const l3names=Object.keys(l2.l3);
   const showL3 = l3names.length>1 || (l3names[0]!=='通用/未標示');
-  let html='';
+  let html=mapRefHTML(l2.pages);
   // L2-level meta only if single L3 (otherwise meta per L3 section)
   const multiTrainer = l3names.length>1;
   if(!multiTrainer){
     html+=metaBlock(l2.l3[l3names[0]].trainers, l2.l3[l3names[0]].contacts,
-      `<div class="item"><div class="k"><i></i>學習地圖</div><div class="v">原始 PPT 第 ${[...l2.pages].sort((a,b)=>a-b).join('、')} 頁</div></div>`);
+      '');
   }
   l3names.forEach(l3n=>{
     const l3=l2.l3[l3n];

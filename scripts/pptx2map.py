@@ -19,6 +19,10 @@ DEFAULT_XLSX = ("/Users/lolo/Library/CloudStorage/OneDrive-ChunghwaTelecomCo.,Lt
                 "學院-work/work庶務/網路學系portal/network-dept-portal/"
                 "學習地圖PPT AI轉檔excel(for網頁顯示）.xlsx")
 
+# 頁尾「資料來源」指向的檔案（課程內容的最終依據是這份校對表，不是 PPT）
+SOURCE_URL = ("https://cht365-my.sharepoint.com/:x:/g/personal/lolo_cht_com_tw/"
+              "IQBQr5lJPC7JTI25Dyt38MTvAedkWgzLJctyGPHNgeQsdHQ?e=YmDUwz")
+
 DEFAULT_PPTX = ("/Users/lolo/Library/CloudStorage/OneDrive-ChunghwaTelecomCo.,Ltd/"
                 "學院-work/work庶務/人發會&新版學習地圖/"
                 "115網路學系_學習地圖_培訓師（network portal AI資料）.pptx")
@@ -407,7 +411,8 @@ def main():
             o["L2"] = o["L2"] or o["L1"]
             o["L3"] = o["L3"] or "通用/未標示"
             out.append({k: o[k] for k in keep})
-        inject(out, a.pptx, arch_of(prs.slides[0]))
+        inject(out, a.pptx, arch_of(prs.slides[0]),
+               source=a.overrides if not a.no_overrides else None)
 
     if a.json:
         keep = ("page", "mapId", "L1", "L2", "L3", "course", "hours", "level",
@@ -423,12 +428,14 @@ def main():
         print(f"JSON 已輸出：{a.json}")
 
 
-def inject(rows, pptx, arch=None):
+def inject(rows, pptx, arch=None, source=None):
     """把課程資料寫回 public/course-map.html，並同步一份到 dist/（build 產物）。"""
     import shutil
     payload = json.dumps(rows, ensure_ascii=False)
     maps = len({r["mapId"] for r in rows})
-    src = f"{os.path.basename(pptx)}（學習地圖 2.0 · {maps} 張學習地圖 · {len(rows)} 筆課程）"
+    name = os.path.basename(source or pptx)
+    src = (f'<a href="{SOURCE_URL}" target="_blank" rel="noopener">{name}</a>'
+           f'（學習地圖 2.0 · {maps} 張學習地圖 · {len(rows)} 筆課程）')
     path = "public/course-map.html"
     html = open(path, encoding="utf-8").read()
     i = html.index("const RAW = [")
@@ -437,7 +444,9 @@ def inject(rows, pptx, arch=None):
     if arch is not None:                       # 總覽的架構直接取自 PPT 第 1 頁
         html = re.sub(r"const ARCH = .*?;\n", "const ARCH = " +
                       json.dumps(arch, ensure_ascii=False) + ";\n", html, count=1, flags=re.S)
-    html = re.sub(r"<span>資料來源：[^<]*</span>", f"<span>資料來源：{src}</span>", html)
+    # 頁尾來源：內含 <a>，所以比對到第一個 </span> 為止就好
+    html = re.sub(r'<span[^>]*>資料來源：.*?</span>',
+                  f'<span class="src">資料來源：{src}</span>', html, count=1, flags=re.S)
     open(path, "w", encoding="utf-8").write(html)
     print(f"  已更新：{path}（{len(rows)} 筆 / {maps} 張地圖）")
     if os.path.isdir("dist"):
